@@ -1,0 +1,6 @@
+{
+  "name": "ACaldeira.EditModeTests",
+  "references": ["ACaldeira.Runtime"],
+  "optionalUnityReferences": ["TestAssemblies"],
+  "includePlatforms": ["Editor"]
+}

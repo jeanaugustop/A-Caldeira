@@ -1,0 +1,6 @@
+{
+  "name": "ACaldeira.Runtime",
+  "rootNamespace": "ACaldeira",
+  "references": ["Unity.InputSystem", "Unity.TextMeshPro", "Unity.ugui"],
+  "autoReferenced": true
+}

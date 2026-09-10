@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a541fa6b18de83418f6ae355acd2dd9, type: 3}
+  m_Name: Trator sucatador
+  m_EditorClassIdentifier: 
+  id: Tractor
+  displayName: Trator sucatador
+  sprite: {fileID: 21300000, guid: 431297ebc63302e469c69edc2c2928ff, type: 3}
+  actorPool: {fileID: 11400000, guid: 65e4a4edd219cb74fb60a98a5fb58510, type: 2}
+  maxHealth: 65
+  moveSpeed: 1.05
+  contactDamage: 12
+  attackCooldown: 1
+  armor: 0
+  mass: 1
+  dropKind: 1
+  experienceValue: 5
+  dropChance: 1
+  collectiblePool: {fileID: 11400000, guid: 423229da6c0797446a69eb9aafd091d1, type: 2}

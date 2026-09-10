@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9788fbae962c7d9488652f86e685df42, type: 3}
+  m_Name: Serras Orbitais
+  m_EditorClassIdentifier: 
+  id: Serras Orbitais
+  displayName: Serras Orbitais
+  description: 
+  icon: {fileID: 21300000, guid: 431297ebc63302e469c69edc2c2928ff, type: 3}
+  deliveryMode: 3
+  damageType: 2
+  projectilePool: {fileID: 11400000, guid: 429d2c0ff3a33124ab6e29c020ddaeac, type: 2}
+  damage: 24
+  cooldown: 2
+  projectileSpeed: 0
+  pierce: 15
+  knockback: 0
+  range: 8
+  duration: 2
+  projectilesPerShot: 3

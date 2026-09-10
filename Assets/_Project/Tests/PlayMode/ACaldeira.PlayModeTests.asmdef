@@ -1,0 +1,5 @@
+{
+  "name": "ACaldeira.PlayModeTests",
+  "references": ["ACaldeira.Runtime"],
+  "optionalUnityReferences": ["TestAssemblies"]
+}
