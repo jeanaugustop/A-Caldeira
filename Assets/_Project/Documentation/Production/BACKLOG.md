@@ -15,6 +15,12 @@ duplique a mesma tarefa em outros lugares.
 - [ ] Tornar o fim de partida inequívoco: vitória e derrota precisam ter título,
   cor, causa e próximo passo diferentes.
   - Origem: a pessoa viu apenas "Turno concluído" e não soube se venceu ou morreu.
+  - Texto aprovado para morte: **"VOCÊ MORREU"** / "O exotraje cedeu. A Caldeira não para."
+  - Texto aprovado para conclusão de fase: **"TURNO CONCLUÍDO"** / "Você sobreviveu ao Pátio de Triagem. A próxima linha já está em movimento."
+  - Texto aprovado para vitória contra chefão final: **"A LINHA FOI ROMPIDA"** / "O coração da máquina silenciou. Por enquanto."
+  - Usar títulos fixos para deixar o resultado claro e uma frase narrativa aleatória
+    abaixo. Criar bancos separados de cerca de 20 frases para morte e conclusão
+    de fase; não repetir uma frase até esgotar o respectivo banco.
 - [ ] Garantir três opções de aprimoramento em todo level-up.
   - Origem: o catálogo atual possui limites e hoje as escolhas podem desaparecer.
   - Aceite: quando armas e evoluções não forem elegíveis, o sistema preenche as
