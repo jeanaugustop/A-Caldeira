@@ -5,6 +5,8 @@ using ACaldeira.Progression;
 using ACaldeira.Simulation;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 namespace ACaldeira.UI
@@ -58,6 +60,20 @@ namespace ACaldeira.UI
                 var u = progression.Offer(i); choiceButtons[i].gameObject.SetActive(u != null);
                 if (u != null) choiceLabels[i].text = u.DisplayName + "\n" + u.Description;
             }
+        }
+        private void Update()
+        {
+            Keyboard keyboard = Keyboard.current;
+            if (gameManager.State != GameState.LevelUp || keyboard == null) return;
+            if (!keyboard.spaceKey.wasPressedThisFrame && !keyboard.enterKey.wasPressedThisFrame && !keyboard.numpadEnterKey.wasPressedThisFrame) return;
+
+            Button selected = null;
+            var selectedObject = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
+            if (selectedObject != null && selectedObject.transform.IsChildOf(choices.transform)) selected = selectedObject.GetComponent<Button>();
+            if (selected == null || !selected.isActiveAndEnabled || !selected.interactable)
+                for (int i = 0; i < choiceButtons.Length; i++)
+                    if (choiceButtons[i].gameObject.activeInHierarchy && choiceButtons[i].interactable) { selected = choiceButtons[i]; break; }
+            if (selected != null) selected.onClick.Invoke();
         }
         private void Permanent()
         {
