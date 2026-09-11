@@ -10,6 +10,7 @@ namespace ACaldeira.Combat
         private Vector2 _direction;
         private readonly EnemyActorHit[] hits = new EnemyActorHit[16];
         private int hitCount;
+        private int maxHits;
         private struct EnemyActorHit { internal int Index; internal uint Generation; }
         public Vector2 Position { get; set; }
         public float Remaining { get; set; }
@@ -27,8 +28,10 @@ namespace ACaldeira.Combat
             Remaining = definition.Duration;
             Damage = definition.Damage;
             Speed = definition.ProjectileSpeed;
-            hitCount = 0;
+            hitCount = 0; maxHits = Mathf.Min(16, definition.Pierce + 1);
         }
+
+        public void SetPierce(int pierce) => maxHits = Mathf.Min(16, Mathf.Max(1, pierce + 1));
 
         public bool HasHit(int index, uint generation)
         {
@@ -39,7 +42,7 @@ namespace ACaldeira.Combat
         public bool RegisterHit(int index, uint generation)
         {
             hits[hitCount++] = new EnemyActorHit { Index = index, Generation = generation };
-            return hitCount >= Mathf.Min(16, _definition.Pierce + 1);
+            return hitCount >= maxHits;
         }
 
         public override void OnDespawned()

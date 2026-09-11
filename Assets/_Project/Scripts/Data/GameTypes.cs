@@ -7,7 +7,7 @@ namespace ACaldeira.Data
     public enum WeaponDeliveryMode { Projectile, Beam, Area, Orbital }
     public enum DamageType { Impact, Heat, Cutting, Hydraulic }
     public enum UpgradeCategory { StatBoost, WeaponUnlock, WeaponEvolution }
-    public enum UpgradeRarity { Common, Uncommon, Rare, Legendary }
+    public enum UpgradeRarity { Common, Uncommon, Rare, Epic, Legendary }
     public enum StatId { MaxHealth, Armor, MoveSpeed, Damage, Cooldown, Area, Duration, ProjectileSpeed, PickupRadius }
     public enum ModifierOperation { Flat, AdditivePercent, MultiplicativePercent }
     public enum CollectibleKind { HotScrap, Oil }

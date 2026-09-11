@@ -32,6 +32,7 @@ namespace ACaldeira.Simulation
         private float[] hazardTimers;
         private float invulnerability;
         private float hudTimer;
+        private float knownMaxHealth;
         public event Action<float, float, float, int> HudChanged;
         public event Action EnemyKilled;
         public float Health { get; private set; }
@@ -40,7 +41,7 @@ namespace ACaldeira.Simulation
         public int Alive { get; private set; }
         public bool Won { get; private set; }
         public bool StressMode { get; private set; }
-        public float MaxHealth => progression.Stat(StatId.MaxHealth, 100f + permanent.ArmorLevel * 10f);
+        public float MaxHealth => progression.Stat(StatId.MaxHealth, 100f + permanent.ArmorLevel * 10f + progression.MaxHealthBonus);
         private void Awake() { grid = new SpatialGrid(enemies.Length, 48, 36, -48f, -36f, 2f); }
         public void Begin(StageSO definition)
         {
@@ -49,7 +50,7 @@ namespace ACaldeira.Simulation
             hazardTimers = new float[stage.Hazards.Length];
             for (int i = 0; i < hazardTimers.Length; i++) hazardTimers[i] = stage.Hazards[i].StartTime;
             player.position = Vector3.zero; progression.Begin(); weapons.BeginRun(StressMode);
-            Health = MaxHealth; invulnerability = 0; hudTimer = 0; grid.Clear();
+            Health = MaxHealth; knownMaxHealth = MaxHealth; invulnerability = 0; hudTimer = 0; grid.Clear();
             waves.Begin(stage);
             if (StressMode)
             {
@@ -65,7 +66,12 @@ namespace ACaldeira.Simulation
             if (gameManager.State != GameState.Playing) return;
             float dt = Mathf.Min(Time.deltaTime, 0.05f);
             Elapsed += dt; invulnerability -= dt;
-            Vector2 p = (Vector2)player.position + input.ReadMovement() * progression.Stat(StatId.MoveSpeed, 5f) * dt;
+            progression.TickEquipment(dt, this);
+            float currentMaxHealth = MaxHealth;
+            if (currentMaxHealth > knownMaxHealth) Health += currentMaxHealth - knownMaxHealth;
+            knownMaxHealth = currentMaxHealth;
+            Health = Mathf.Min(currentMaxHealth, Health + dt);
+            Vector2 p = (Vector2)player.position + input.ReadMovement() * progression.Stat(StatId.MoveSpeed, 5f) * progression.MovementMultiplier * dt;
             Rect bounds = stage.SpawnArea;
             p.x = Mathf.Clamp(p.x, bounds.xMin + 1, bounds.xMax - 1); p.y = Mathf.Clamp(p.y, bounds.yMin + 1, bounds.yMax - 1);
             player.position = p;
@@ -127,9 +133,45 @@ namespace ACaldeira.Simulation
         public void Hurt(float damage)
         {
             if (StressMode || invulnerability > 0 || gameManager.State != GameState.Playing) return;
-            Health = Mathf.Max(0f, Health - Mathf.Max(1f, damage - progression.Stat(StatId.Armor, permanent.ArmorLevel)));
+            if (progression.TryDodge()) return;
+            if (progression.TryBlockDamage(out bool cable))
+            {
+                invulnerability = 0.25f;
+                if (cable) PushEnemies(4f + progression.AccessoryLevel(6), 3f + progression.AccessoryLevel(6));
+                return;
+            }
+            float dealt = Mathf.Max(1f, damage - progression.Stat(StatId.Armor, permanent.ArmorLevel));
+            dealt *= progression.DamageMultiplier(Health, MaxHealth);
+            if (Health - dealt <= 0f && progression.TryConsumeFuse(out float healthFraction))
+            {
+                Health = Mathf.Max(1f, MaxHealth * healthFraction); invulnerability = 5f;
+                PushEnemies(6f, 6f); return;
+            }
+            Health = Mathf.Max(0f, Health - dealt);
+            progression.OnDamaged();
             invulnerability = 0.4f;
             if (Health <= 0f) gameManager.EndRun();
+        }
+        public void AttractExperience(float radius)
+        {
+            Vector2 p = player.position; float sqr = radius * radius;
+            for (int i = 0; i < collectibles.Length; i++)
+            {
+                CollectibleActor c = collectibles[i];
+                if (!c.IsSpawned || ((Vector2)c.Position - p).sqrMagnitude > sqr) continue;
+                c.Position = Vector2.MoveTowards(c.Position, p, radius); c.transform.position = c.Position;
+            }
+        }
+        public void PushEnemies(float radius, float force)
+        {
+            Vector2 p = player.position; float sqr = radius * radius;
+            for (int i = 0; i < enemies.Length; i++)
+            {
+                EnemyActor e = enemies[i]; if (!e.IsSpawned) continue;
+                Vector2 delta = e.Position - p; if (delta.sqrMagnitude > sqr) continue;
+                e.Position += delta.sqrMagnitude > 0.001f ? delta.normalized * force : UnityEngine.Random.insideUnitCircle * force;
+                e.transform.position = e.Position;
+            }
         }
         public bool TryAim(float range, out Vector2 direction)
         {

@@ -109,20 +109,21 @@ namespace ACaldeira.UI
         private void Experience(int current, int required)
         {
             xpBar.SetValueWithoutNotify(Mathf.Clamp01((float)current / required));
-            xpText.SetText("NIVEL {0:0}   SUCATA {1:0}/{2:0}", progression.Level, current, required);
+            xpText.SetText("NIVEL {0:0}   SUCATA {1:0}/{2:0}   RERROLLS {3}", progression.Level, current, required, progression.Rerolls);
         }
         private void ShowChoices()
         {
             for (int i = 0; i < choiceButtons.Length; i++)
             {
                 var u = progression.Offer(i); choiceButtons[i].gameObject.SetActive(u != null);
-                if (u != null) choiceLabels[i].text = u.DisplayName + "\n" + u.Description;
+                if (u != null) choiceLabels[i].text = u.Title + "\n" + u.Description;
             }
         }
         private void Update()
         {
             Keyboard keyboard = Keyboard.current;
             if (gameManager.State != GameState.LevelUp || keyboard == null) return;
+            if (keyboard.rKey.wasPressedThisFrame) { progression.TryReroll(); return; }
             if (!keyboard.spaceKey.wasPressedThisFrame && !keyboard.enterKey.wasPressedThisFrame && !keyboard.numpadEnterKey.wasPressedThisFrame) return;
 
             Button selected = null;
@@ -159,5 +160,6 @@ namespace ACaldeira.UI
         public void ChooseFirst() => progression.Choose(0);
         public void ChooseSecond() => progression.Choose(1);
         public void ChooseThird() => progression.Choose(2);
+        public void RerollChoices() => progression.TryReroll();
     }
 }
