@@ -1,5 +1,5 @@
 {
   "name": "ACaldeira.PlayModeTests",
-  "references": ["ACaldeira.Runtime"],
+  "references": ["ACaldeira.Runtime", "Unity.TextMeshPro"],
   "optionalUnityReferences": ["TestAssemblies"]
 }

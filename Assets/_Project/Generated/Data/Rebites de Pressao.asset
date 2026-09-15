@@ -15,7 +15,7 @@ MonoBehaviour:
   id: Rebites de Pressao
   displayName: Rebites de Pressao
   description: 
-  icon: {fileID: 21300000, guid: 431297ebc63302e469c69edc2c2928ff, type: 3}
+  icon: {fileID: -1302817719, guid: 3f60df4a63c835446b38e8a4c1a19e75, type: 3}
   deliveryMode: 0
   damageType: 0
   projectilePool: {fileID: 11400000, guid: 777f4a1071e21934a9ee3df535c330eb, type: 2}

@@ -1,0 +1,61 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c1bb52e947cb8ba42a39d7360c7bf760, type: 3}
+  m_Name: tractor-directions
+  m_EditorClassIdentifier: 
+  Frames:
+  - {fileID: 1480767547, guid: e5b3da066ac88bb4b902b066c2965a77, type: 3}
+  - {fileID: -679502321, guid: e5b3da066ac88bb4b902b066c2965a77, type: 3}
+  - {fileID: 1691669668, guid: e5b3da066ac88bb4b902b066c2965a77, type: 3}
+  - {fileID: 50018652, guid: e5b3da066ac88bb4b902b066c2965a77, type: 3}
+  - {fileID: 1842781998, guid: e5b3da066ac88bb4b902b066c2965a77, type: 3}
+  - {fileID: -177622820, guid: e5b3da066ac88bb4b902b066c2965a77, type: 3}
+  - {fileID: 687564301, guid: e5b3da066ac88bb4b902b066c2965a77, type: 3}
+  - {fileID: -1881842668, guid: e5b3da066ac88bb4b902b066c2965a77, type: 3}
+  MoveFrames:
+  - {fileID: -527028831, guid: 96e66413d6101ed458c595e89c5bfa46, type: 3}
+  - {fileID: -1635265730, guid: 96e66413d6101ed458c595e89c5bfa46, type: 3}
+  - {fileID: -63211483, guid: 96e66413d6101ed458c595e89c5bfa46, type: 3}
+  - {fileID: 462492320, guid: 96e66413d6101ed458c595e89c5bfa46, type: 3}
+  - {fileID: -423927590, guid: 96e66413d6101ed458c595e89c5bfa46, type: 3}
+  - {fileID: -582862962, guid: 96e66413d6101ed458c595e89c5bfa46, type: 3}
+  - {fileID: -1523055845, guid: 96e66413d6101ed458c595e89c5bfa46, type: 3}
+  - {fileID: -1170825879, guid: 96e66413d6101ed458c595e89c5bfa46, type: 3}
+  - {fileID: 55128958, guid: 96e66413d6101ed458c595e89c5bfa46, type: 3}
+  - {fileID: 702630958, guid: 96e66413d6101ed458c595e89c5bfa46, type: 3}
+  - {fileID: 1606772176, guid: 96e66413d6101ed458c595e89c5bfa46, type: 3}
+  - {fileID: -1282502555, guid: 96e66413d6101ed458c595e89c5bfa46, type: 3}
+  - {fileID: -842362192, guid: 96e66413d6101ed458c595e89c5bfa46, type: 3}
+  - {fileID: -2129600410, guid: 96e66413d6101ed458c595e89c5bfa46, type: 3}
+  - {fileID: -568747029, guid: 96e66413d6101ed458c595e89c5bfa46, type: 3}
+  - {fileID: -406137899, guid: 96e66413d6101ed458c595e89c5bfa46, type: 3}
+  - {fileID: -427293011, guid: 96e66413d6101ed458c595e89c5bfa46, type: 3}
+  - {fileID: 2105377024, guid: 96e66413d6101ed458c595e89c5bfa46, type: 3}
+  - {fileID: 2093294446, guid: 96e66413d6101ed458c595e89c5bfa46, type: 3}
+  - {fileID: -416545227, guid: 96e66413d6101ed458c595e89c5bfa46, type: 3}
+  - {fileID: -1950968167, guid: 96e66413d6101ed458c595e89c5bfa46, type: 3}
+  - {fileID: 145518947, guid: 96e66413d6101ed458c595e89c5bfa46, type: 3}
+  - {fileID: 2061471932, guid: 96e66413d6101ed458c595e89c5bfa46, type: 3}
+  - {fileID: 1844701319, guid: 96e66413d6101ed458c595e89c5bfa46, type: 3}
+  - {fileID: -1839151317, guid: 96e66413d6101ed458c595e89c5bfa46, type: 3}
+  - {fileID: -1887517584, guid: 96e66413d6101ed458c595e89c5bfa46, type: 3}
+  - {fileID: 838242955, guid: 96e66413d6101ed458c595e89c5bfa46, type: 3}
+  - {fileID: 1403604561, guid: 96e66413d6101ed458c595e89c5bfa46, type: 3}
+  - {fileID: 129814606, guid: 96e66413d6101ed458c595e89c5bfa46, type: 3}
+  - {fileID: -1413398546, guid: 96e66413d6101ed458c595e89c5bfa46, type: 3}
+  - {fileID: 1469700794, guid: 96e66413d6101ed458c595e89c5bfa46, type: 3}
+  - {fileID: -470562331, guid: 96e66413d6101ed458c595e89c5bfa46, type: 3}
+  Mirror: 0000000000000000
+  WorldSize: 4.2
+  BobAmplitude: 0
+  BobFrequency: 12
+  AnimationFramesPerUnit: 2

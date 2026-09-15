@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa2069b068868e84c983c1b188fa01ac, type: 3}
+  m_Name: DieselpunkArt
+  m_EditorClassIdentifier: 
+  Actors:
+  - {fileID: 1368180225, guid: 31c11fc17d5c2564e91df8b175d0ad0c, type: 3}
+  - {fileID: -124698380, guid: 31c11fc17d5c2564e91df8b175d0ad0c, type: 3}
+  - {fileID: 897003724, guid: 31c11fc17d5c2564e91df8b175d0ad0c, type: 3}
+  - {fileID: -350493894, guid: 31c11fc17d5c2564e91df8b175d0ad0c, type: 3}
+  Weapons:
+  - {fileID: -1302817719, guid: 3f60df4a63c835446b38e8a4c1a19e75, type: 3}
+  - {fileID: -554196493, guid: 3f60df4a63c835446b38e8a4c1a19e75, type: 3}
+  - {fileID: 21300000, guid: 6154bbacf42b19742976944a0a9e86b0, type: 3}
+  - {fileID: 729860604, guid: 3f60df4a63c835446b38e8a4c1a19e75, type: 3}
+  - {fileID: 113677536, guid: 3f60df4a63c835446b38e8a4c1a19e75, type: 3}
+  - {fileID: 585644925, guid: 3f60df4a63c835446b38e8a4c1a19e75, type: 3}
+  Accessories:
+  - {fileID: 522523144, guid: 5e75ee232ab2f8c438d956ccd634d8cb, type: 3}
+  - {fileID: 1771721017, guid: 5e75ee232ab2f8c438d956ccd634d8cb, type: 3}
+  - {fileID: 1087192232, guid: 5e75ee232ab2f8c438d956ccd634d8cb, type: 3}
+  - {fileID: 913131241, guid: 5e75ee232ab2f8c438d956ccd634d8cb, type: 3}
+  - {fileID: 1659632258, guid: 5e75ee232ab2f8c438d956ccd634d8cb, type: 3}
+  - {fileID: -1605269007, guid: 5e75ee232ab2f8c438d956ccd634d8cb, type: 3}
+  - {fileID: 975061240, guid: 5e75ee232ab2f8c438d956ccd634d8cb, type: 3}
+  - {fileID: 1381167827, guid: 5e75ee232ab2f8c438d956ccd634d8cb, type: 3}
+  Props:
+  - {fileID: 141908459, guid: 82cc10dbd3f6469458d5da6bc5881788, type: 3}
+  - {fileID: -883171672, guid: 82cc10dbd3f6469458d5da6bc5881788, type: 3}
+  - {fileID: -1705629874, guid: 82cc10dbd3f6469458d5da6bc5881788, type: 3}
+  - {fileID: -1118868120, guid: 82cc10dbd3f6469458d5da6bc5881788, type: 3}
+  - {fileID: 1728090262, guid: 82cc10dbd3f6469458d5da6bc5881788, type: 3}
+  - {fileID: 1114875820, guid: 82cc10dbd3f6469458d5da6bc5881788, type: 3}
+  Effects:
+  - {fileID: -2037332797, guid: a3999d531c389314492ca9504e2af5ce, type: 3}
+  - {fileID: 1891357554, guid: a3999d531c389314492ca9504e2af5ce, type: 3}
+  - {fileID: -1303728252, guid: a3999d531c389314492ca9504e2af5ce, type: 3}
+  - {fileID: 198935339, guid: a3999d531c389314492ca9504e2af5ce, type: 3}
+  - {fileID: 1265783126, guid: a3999d531c389314492ca9504e2af5ce, type: 3}
+  - {fileID: 66748656, guid: a3999d531c389314492ca9504e2af5ce, type: 3}
+  Floor: {fileID: 21300000, guid: b58281e969c3e3c4b92ad79ddc2f1093, type: 3}
+  Menu: {fileID: 21300000, guid: e5734a7f4fcb13a41917569591225a33, type: 3}

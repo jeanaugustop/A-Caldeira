@@ -15,7 +15,7 @@ MonoBehaviour:
   id: Serras Orbitais
   displayName: Serras Orbitais
   description: 
-  icon: {fileID: 21300000, guid: 431297ebc63302e469c69edc2c2928ff, type: 3}
+  icon: {fileID: 21300000, guid: 6154bbacf42b19742976944a0a9e86b0, type: 3}
   deliveryMode: 3
   damageType: 2
   projectilePool: {fileID: 11400000, guid: 429d2c0ff3a33124ab6e29c020ddaeac, type: 2}

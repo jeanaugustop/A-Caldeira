@@ -8,9 +8,6 @@ namespace ACaldeira.Combat
 {
     public sealed class WeaponManager : MonoBehaviour
     {
-        // Mantém o asset preservado para rebalanceamento, mas o impede de entrar
-        // em qualquer loadout ou carta até novo playtest.
-        private const string SuspendedWeaponId = "Oleo Cru";
         [SerializeField] private PoolManager poolManager;
         [SerializeField] private GameManager gameManager;
         [SerializeField] private RunProgression progression;
@@ -22,15 +19,19 @@ namespace ACaldeira.Combat
         private WeaponSO[] definitions;
         private float[] cooldowns;
         private int[] levels;
+        private int[] oilShotCounts;
         public bool HasSpace { get { for (int i = 0; i < definitions.Length; i++) if (definitions[i] == null) return true; return false; } }
         public int EquippedCount { get { int count = 0; for (int i = 0; i < definitions.Length; i++) if (definitions[i] != null) count++; return count; } }
-        private void Awake() { definitions = new WeaponSO[maxWeaponSlots]; cooldowns = new float[maxWeaponSlots]; levels = new int[maxWeaponSlots]; }
+        private void Awake()
+        {
+            definitions = new WeaponSO[maxWeaponSlots]; cooldowns = new float[maxWeaponSlots];
+            levels = new int[maxWeaponSlots]; oilShotCounts = new int[maxWeaponSlots];
+        }
         public void BeginRun(bool stress = false)
         {
-            for (int i = 0; i < definitions.Length; i++) { definitions[i] = null; cooldowns[i] = 0f; levels[i] = 0; }
+            for (int i = 0; i < definitions.Length; i++) { definitions[i] = null; cooldowns[i] = 0f; levels[i] = 0; oilShotCounts[i] = 0; }
             var loadout = stress ? stressWeapons : startingWeapons;
-            for (int i = 0; i < loadout.Length; i++)
-                if (IsAvailable(loadout[i])) TryEquip(loadout[i]);
+            for (int i = 0; i < loadout.Length; i++) TryEquip(loadout[i]);
         }
         public bool Has(WeaponSO weapon)
         {
@@ -61,7 +62,7 @@ namespace ACaldeira.Combat
             if (source == null) return;
             for (int i = 0; i < source.Length; i++)
             {
-                WeaponSO weapon = source[i]; if (!IsAvailable(weapon)) continue;
+                WeaponSO weapon = source[i]; if (weapon == null) continue;
                 bool alreadySeen = false;
                 for (int j = 0; j < i; j++) if (source[j] == weapon) alreadySeen = true;
                 if (skip != null)
@@ -79,6 +80,8 @@ namespace ACaldeira.Combat
             for (int i = 0; i < definitions.Length; i++)
                 if (definitions[i] == weapon) { levels[i] = Mathf.Min(6, levels[i] + 1); return; }
         }
+        public WeaponSO KnownWeapon(int instanceId) => FindKnownWeapon(instanceId);
+        public WeaponSO EquippedAt(int index) => definitions != null && index >= 0 && index < definitions.Length ? definitions[index] : null;
         private WeaponSO FindKnownWeapon(int instanceId)
         {
             WeaponSO found = FindKnownWeapon(startingWeapons, instanceId);
@@ -90,7 +93,6 @@ namespace ACaldeira.Combat
             for (int i = 0; i < source.Length; i++) if (source[i] != null && source[i].GetInstanceID() == instanceId) return source[i];
             return null;
         }
-        private static bool IsAvailable(WeaponSO weapon) => weapon != null && weapon.Id != SuspendedWeaponId;
         public void Evolve(WeaponSO original, WeaponSO evolved)
         {
             if (evolved == null) return;
@@ -104,7 +106,8 @@ namespace ACaldeira.Combat
                 if (definitions[i] == null) continue;
                 cooldowns[i] -= dt;
                 if (cooldowns[i] > 0f) continue;
-                if (definitions[i].DeliveryMode == WeaponDeliveryMode.Orbital) TryFire(i, Vector2.right);
+                if (definitions[i].Id == "Oleo Cru" && simulation.TryAim(12f, out Vector2 oilDirection)) TryFire(i, oilDirection);
+                else if (definitions[i].DeliveryMode == WeaponDeliveryMode.Orbital) TryFire(i, Vector2.right);
                 else if (simulation.TryAim(definitions[i].Range, out Vector2 direction)) TryFire(i, direction);
             }
         }
@@ -115,6 +118,31 @@ namespace ACaldeira.Combat
             if (w == null || w.ProjectilePool == null) return false;
             bool fired = false;
             int level = levels[slot];
+            if (w.Id == "Oleo Cru")
+            {
+                int puddleCount = level >= 2 ? 2 : 1;
+                bool reinforced = level >= 6 && (++oilShotCounts[slot] % 4 == 0);
+                float radius = 1.25f + (level >= 5 ? 0.35f : 0f) + (reinforced ? 0.45f : 0f);
+                float duration = 3f + (level >= 5 ? 1.25f : 0f);
+                // A poça básica precisa produzir uma leitura clara de dano sem voltar a ser uma rajada.
+                float damage = progression.Stat(StatId.Damage, w.Damage * (0.75f + (reinforced ? 0.25f : 0f)) * (1f + permanent.DamageLevel * 0.05f));
+                float slow = level >= 3 ? 0.18f + (reinforced ? 0.08f : 0f) : 0f;
+                float distance = level >= 4 ? 6.5f : 5f;
+                Vector2 aim = direction.sqrMagnitude > 0f ? direction.normalized : Vector2.right;
+                Vector2 lateralAxis = new Vector2(-aim.y,aim.x);
+                for (int i = 0; i < puddleCount; i++)
+                {
+                    float centered = i-(puddleCount-1)*.5f;
+                    float lateral = centered*Mathf.Max(1.6f,radius*1.35f);
+                    float depth = puddleCount>1 ? (i%2==0 ? -.35f : .35f) : 0f;
+                    Vector2 landingOffset=aim*(distance+depth)+lateralAxis*lateral;
+                    if (!poolManager.TrySpawn(w.ProjectilePool, muzzle.position, Quaternion.identity, out ProjectileActor p)) break;
+                    p.ConfigureOil(w,landingOffset.normalized,landingOffset.magnitude,radius,duration,damage,slow,0.75f);
+                    fired = true;
+                }
+                if (fired) cooldowns[slot] = 3f / progression.CadenceMultiplier;
+                return fired;
+            }
             int count = w.ProjectilesPerShot + (level >= 2 ? 1 : 0);
             for (int i = 0; i < count; i++)
             {

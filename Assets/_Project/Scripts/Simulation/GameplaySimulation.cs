@@ -33,6 +33,7 @@ namespace ACaldeira.Simulation
         private float invulnerability;
         private float hudTimer;
         private float knownMaxHealth;
+        private float largestEnemyRadius=.45f;
         public event Action<float, float, float, int> HudChanged;
         public event Action EnemyKilled;
         public float Health { get; private set; }
@@ -42,14 +43,27 @@ namespace ACaldeira.Simulation
         public bool Won { get; private set; }
         public bool StressMode { get; private set; }
         public float MaxHealth => progression.Stat(StatId.MaxHealth, 100f + permanent.ArmorLevel * 10f + progression.MaxHealthBonus);
-        private void Awake() { grid = new SpatialGrid(enemies.Length, 48, 36, -48f, -36f, 2f); }
+        private void Awake() { EnsureGrid(); }
+        private void EnsureGrid()
+        {
+            if (grid != null) return;
+            Rect bounds = stage != null ? stage.SpawnArea : new Rect(-90f, -60f, 180f, 120f);
+            const float padding = 24f;
+            grid = new SpatialGrid(enemies.Length,
+                Mathf.CeilToInt((bounds.width + padding * 2) / 2f),
+                Mathf.CeilToInt((bounds.height + padding * 2) / 2f),
+                bounds.xMin - padding, bounds.yMin - padding, 2f);
+        }
         public void Begin(StageSO definition)
         {
-            stage = definition; Elapsed = 0; Kills = 0; Alive = 0; Won = false;
+            stage = definition; grid = null; EnsureGrid();
+            Elapsed = 0; Kills = 0; Alive = 0; Won = false;
             StressMode = stage.Id == "stress";
             hazardTimers = new float[stage.Hazards.Length];
             for (int i = 0; i < hazardTimers.Length; i++) hazardTimers[i] = stage.Hazards[i].StartTime;
             player.position = Vector3.zero; progression.Begin(); weapons.BeginRun(StressMode);
+            var directional=player.GetComponent<ACaldeira.UI.DirectionalActor>();
+            if(directional!=null)directional.ResetFacing();
             Health = MaxHealth; knownMaxHealth = MaxHealth; invulnerability = 0; hudTimer = 0; grid.Clear();
             waves.Begin(stage);
             if (StressMode)
@@ -74,12 +88,25 @@ namespace ACaldeira.Simulation
             Vector2 p = (Vector2)player.position + input.ReadMovement() * progression.Stat(StatId.MoveSpeed, 5f) * progression.MovementMultiplier * dt;
             Rect bounds = stage.SpawnArea;
             p.x = Mathf.Clamp(p.x, bounds.xMin + 1, bounds.xMax - 1); p.y = Mathf.Clamp(p.y, bounds.yMin + 1, bounds.yMax - 1);
+            p = YardObstacles.ResolveMotion(player.position, p);
             player.position = p;
             worldCamera.transform.position = new Vector3(p.x, p.y, -10f);
-            waves.Tick(dt); grid.Clear(); Alive = 0;
+            if (waves == null) waves = FindFirstObjectByType<WaveSpawner>();
+            if (waves == null)
+            {
+                Debug.LogError("A Caldeira: WaveSpawner não foi encontrado.");
+                gameManager.EndRun();
+                return;
+            }
+            EnsureGrid();
+            waves.Tick(dt); grid.Clear(); Alive = 0;largestEnemyRadius=.45f;
             for (int i = 0; i < enemies.Length; i++)
             {
                 EnemyActor e = enemies[i]; if (!e.IsSpawned) continue;
+                e.TickStatus(dt);
+                Vector2 oldEnemyPosition=e.Position;
+                float bodyRadius=e.Definition.CollisionRadius;
+                largestEnemyRadius=Mathf.Max(largestEnemyRadius,bodyRadius);
                 Vector2 delta = p - e.Position;
                 float distance = delta.magnitude;
                 if (StressMode)
@@ -88,10 +115,21 @@ namespace ACaldeira.Simulation
                     float radius = 2f + (i % 140) * 0.1f;
                     e.Position = p + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
                 }
-                else if (distance > 0.7f) e.Position += delta / distance * e.Definition.MoveSpeed * dt;
+                else if (distance > bodyRadius+.25f)
+                {
+                    Vector2 previous=e.Position;
+                    float step=e.EffectiveMoveSpeed*dt;
+                    e.Position=YardObstacles.ResolveMotion(previous,previous+delta/distance*step,bodyRadius);
+                    if((e.Position-previous).sqrMagnitude<step*step*.04f)
+                    {
+                        Vector2 tangent=new Vector2(-delta.y,delta.x).normalized;
+                        e.Position=YardObstacles.ResolveMotion(previous,previous+tangent*step,bodyRadius);
+                    }
+                }
                 e.transform.position = e.Position;
+                e.TickVisual(e.Position-oldEnemyPosition,dt);
                 e.AttackTimer -= dt;
-                if (distance < 0.85f && e.AttackTimer <= 0f)
+                if ((p-e.Position).sqrMagnitude < (bodyRadius+.4f)*(bodyRadius+.4f) && e.AttackTimer <= 0f)
                 { Hurt(e.Definition.ContactDamage); e.AttackTimer = e.Definition.AttackCooldown; }
                 grid.Insert(i, e.Position.x, e.Position.y); Alive++;
             }
@@ -100,6 +138,20 @@ namespace ACaldeira.Simulation
             for (int i = 0; i < projectiles.Length; i++)
             {
                 ProjectileActor shot = projectiles[i]; if (!shot.IsSpawned) continue;
+                shot.TickVisual(dt);
+                if (shot.IsOilInFlight)
+                {
+                    shot.TickOilFlight(dt);
+                    shot.transform.position = shot.Position;
+                    continue;
+                }
+                if (shot.IsOilPuddle)
+                {
+                    bool ended = shot.TickOilPuddle(dt, out bool pulse);
+                    if (pulse) DamageOilPuddle(shot);
+                    if (ended) pools.Despawn(shot);
+                    continue;
+                }
                 Vector2 old = shot.Position;
                 if (shot.Definition.DeliveryMode == WeaponDeliveryMode.Orbital)
                 {
@@ -189,7 +241,7 @@ namespace ACaldeira.Simulation
         }
         private bool HitSegment(ProjectileActor shot, Vector2 a, Vector2 b)
         {
-            const float radius = 0.6f;
+            float radius = largestEnemyRadius+.15f;
             Vector2 segment = b - a; float lengthSquared = segment.sqrMagnitude;
             for (int y = grid.Row(Mathf.Min(a.y, b.y) - radius); y <= grid.Row(Mathf.Max(a.y, b.y) + radius); y++)
                 for (int x = grid.Column(Mathf.Min(a.x, b.x) - radius); x <= grid.Column(Mathf.Max(a.x, b.x) + radius); x++)
@@ -198,7 +250,8 @@ namespace ACaldeira.Simulation
                         EnemyActor e = enemies[i];
                         if (!e.IsSpawned || shot.HasHit(i, e.Generation)) continue;
                         float t = lengthSquared > 0f ? Mathf.Clamp01(Vector2.Dot(e.Position - a, segment) / lengthSquared) : 0;
-                        if ((e.Position - a - segment * t).sqrMagnitude > radius * radius) continue;
+                        float hitRadius=e.Definition.CollisionRadius+.15f;
+                        if ((e.Position - a - segment * t).sqrMagnitude > hitRadius * hitRadius) continue;
                         bool exhausted = shot.RegisterHit(i, e.Generation);
                         if (!StressMode && e.Damage(shot.Damage)) Kill(e);
                         if (exhausted) return true;
@@ -212,6 +265,22 @@ namespace ACaldeira.Simulation
             if (UnityEngine.Random.value <= definition.DropChance &&
                 pools.TrySpawn(definition.CollectiblePool, position, Quaternion.identity, out CollectibleActor c))
                 c.Configure(definition.DropKind, definition.ExperienceValue);
+        }
+        private void DamageOilPuddle(ProjectileActor puddle)
+        {
+            float radius = puddle.OilRadius;
+            Vector2 center = puddle.Position;
+            // Há poucas poças simultâneas. A varredura direta evita que um alvo deixe de receber
+            // o pulso por estar numa célula de grade diferente durante a atualização do quadro.
+            for(int i=0;i<enemies.Length;i++)
+            {
+                EnemyActor enemy=enemies[i];
+                if(!enemy.IsSpawned)continue;
+                float reach=radius+enemy.Definition.CollisionRadius;
+                if((enemy.Position-center).sqrMagnitude>reach*reach)continue;
+                if(puddle.OilSlow>0f)enemy.ApplySlow(puddle.OilSlow,puddle.OilSlowDuration);
+                if(!StressMode && enemy.Damage(puddle.Damage))Kill(enemy);
+            }
         }
         private void TickHazards(float dt, Vector2 p)
         {

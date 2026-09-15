@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: Drone
   displayName: Drone de solda
-  sprite: {fileID: 21300000, guid: 431297ebc63302e469c69edc2c2928ff, type: 3}
+  sprite: {fileID: -1736436329, guid: 2781804011bc3b24e9ae354b43179fa2, type: 3}
   actorPool: {fileID: 11400000, guid: 569c89af21d10034a8270f7e7bba64ce, type: 2}
   maxHealth: 18
   moveSpeed: 1.6
@@ -22,6 +22,7 @@ MonoBehaviour:
   attackCooldown: 1
   armor: 0
   mass: 1
+  collisionRadius: 0.3
   dropKind: 0
   experienceValue: 2
   dropChance: 1

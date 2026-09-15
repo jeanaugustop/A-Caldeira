@@ -83,6 +83,7 @@ namespace ACaldeira.World
             Rect area = _stage.SpawnArea;
             Vector2 point = (Vector2)player.position + Random.insideUnitCircle.normalized * Random.Range(11f, 16f);
             Vector3 position = new Vector3(Mathf.Clamp(point.x, area.xMin, area.xMax), Mathf.Clamp(point.y, area.yMin, area.yMax), 0f);
+            if (YardObstacles.IsBlocked(position,definition.CollisionRadius)) return;
 
             if (poolManager.TrySpawn(definition.ActorPool, position, Quaternion.identity, out EnemyActor actor))
             {

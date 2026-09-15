@@ -18,6 +18,7 @@ namespace ACaldeira.Data
         [SerializeField, Min(0.01f)] private float attackCooldown = 1f;
         [SerializeField, Min(0f)] private float armor;
         [SerializeField, Min(0f)] private float mass = 1f;
+        [SerializeField, Min(0.1f)] private float collisionRadius = .45f;
 
         [Header("Rewards")]
         [SerializeField] private CollectibleKind dropKind = CollectibleKind.HotScrap;
@@ -35,6 +36,7 @@ namespace ACaldeira.Data
         public float AttackCooldown => attackCooldown;
         public float Armor => armor;
         public float Mass => mass;
+        public float CollisionRadius => collisionRadius;
         public CollectibleKind DropKind => dropKind;
         public int ExperienceValue => experienceValue;
         public float DropChance => dropChance;

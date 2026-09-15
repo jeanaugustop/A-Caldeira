@@ -137,9 +137,7 @@ namespace ACaldeira.Editor
             Wire(waves, "poolManager", pools, "player", player);
             Wire(weapons, "poolManager", pools, "gameManager", game, "progression", progression, "permanent", permanent, "muzzle", player, "maxWeaponSlots", 8);
             Array(weapons, "startingWeapons", new Object[] { rivet });
-            // Óleo Cru está temporariamente suspenso: o leque atual limpa a arena
-            // rápido demais e mascara o balanceamento das outras armas.
-            Array(weapons, "stressWeapons", new Object[] { rivet, saw, stake });
+            Array(weapons, "stressWeapons", new Object[] { rivet, flame, saw, stake });
             Wire(progression, "gameManager", game, "weapons", weapons, "experienceChanged", xp, "maxEquipmentSlots", 8);
             Wire(input, "gameManager", game); Wire(probe, "gameManager", game, "simulation", simulation, "pools", pools);
             Wire(simulation, "gameManager", game, "pools", pools, "waves", waves, "weapons", weapons, "progression", progression,

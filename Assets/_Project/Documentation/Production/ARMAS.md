@@ -34,18 +34,22 @@ de produção de projéteis.
 7. **Tempestade de Rebites** — evolução da Forja; substitui os tiros isolados
    por rajadas rápidas, múltiplas e perfurantes.
 
-## Óleo Cru — controle de grupos próximos
+## Óleo Cru — controle de terreno
 
-Espalha um leque de óleo e mantém a horda sob pressão ao redor do jogador.
+Cospe uma bolota de óleo superaquecido em uma direção automática. A direção é a
+do inimigo mais próximo, mas a bolota sempre cai a uma distância fixa do jogador;
+ela ignora inimigos no caminho e cria uma poça no chão. A poça causa dano baixo
+em pulsos e desacelera a horda que a atravessa. O papel da arma é criar zonas de
+controle, não limpar inimigos como uma rajada.
 
-1. **Óleo Cru** — pulveriza gotículas de óleo em um leque de curto alcance.
-2. **Bico Alargado** — adiciona mais gotículas a cada pulverização.
+1. **Óleo Cru** — lança uma bolota a uma distância fixa e cria uma poça pequena.
+2. **Bico Alargado** — adiciona uma segunda bolota controlada, sem virar rajada.
 3. **Óleo Viscoso** — inimigos atingidos ficam desacelerados por um breve período.
-4. **Mangueira Pressurizada** — aumenta o alcance e a velocidade do jato.
-5. **Tanque de Refluxo** — as gotículas permanecem ativas por mais tempo e
-   atravessam mais inimigos.
-6. **Pulverizador de Alta Vazão** — a cada alguns disparos, libera um leque
-   amplo de óleo reforçado.
+4. **Mangueira Pressurizada** — aumenta a distância fixa em que a bolota cai.
+5. **Tanque de Refluxo** — poças permanecem no chão por mais tempo e cobrem uma
+   área maior.
+6. **Pulverizador de Alta Vazão** — periodicamente cria uma poça reforçada, maior
+   e mais viscosa, no ponto de queda.
 
 7. **Fornalha Ambulante** — evolução da Forja; o óleo deixa rastros incendiários
    breves no chão.
@@ -117,5 +121,6 @@ Deixa minas na posição passada do jogador e pune a horda que o segue.
 
 Rebites de Pressão, Óleo Cru, Serras Orbitais, Estacas Hidráulicas e Tempestade
 de Rebites já existem no protótipo, mas ainda não têm estas trilhas de sete
-níveis. Prensa de Choque, Carga de Retardo e as demais evoluções estão aprovadas
+níveis. Óleo Cru está suspenso até trocar o leque atual pela bolota que cria poça
+no chão. Prensa de Choque, Carga de Retardo e as demais evoluções estão aprovadas
 como design e aguardam implementação.

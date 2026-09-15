@@ -1,5 +1,11 @@
 # A Caldeira: Sobrevivência de Ferro
 
+## Versão artística integrada
+
+O projeto principal agora inclui a passagem visual dieselpunk: personagem e inimigos direcionais animados, armas e acessórios ilustrados, interface temática e o Pátio de Triagem ampliado para 180 × 120 unidades.
+
+Use Unity **2022.3.62f3** e abra `Assets/_Project/Generated/Scenes/00_Bootstrap.unity`. Detalhes da direção visual estão em `Assets/_Project/Documentation/Production/VERSAO_COM_ARTES.md`.
+
 Protótipo Unity 2022.3 LTS / URP 2D para PC e mobile. Inclui combate centralizado,
 pools fixos, progressão durante a partida, oficina permanente e interface.
 

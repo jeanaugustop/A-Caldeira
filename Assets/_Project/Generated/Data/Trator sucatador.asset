@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: Tractor
   displayName: Trator sucatador
-  sprite: {fileID: 21300000, guid: 431297ebc63302e469c69edc2c2928ff, type: 3}
+  sprite: {fileID: 1480767547, guid: e5b3da066ac88bb4b902b066c2965a77, type: 3}
   actorPool: {fileID: 11400000, guid: 65e4a4edd219cb74fb60a98a5fb58510, type: 2}
   maxHealth: 65
   moveSpeed: 1.05
@@ -22,6 +22,7 @@ MonoBehaviour:
   attackCooldown: 1
   armor: 0
   mass: 1
+  collisionRadius: 1.05
   dropKind: 1
   experienceValue: 5
   dropChance: 1

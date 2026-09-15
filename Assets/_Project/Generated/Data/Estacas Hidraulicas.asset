@@ -15,7 +15,7 @@ MonoBehaviour:
   id: Estacas Hidraulicas
   displayName: Estacas Hidraulicas
   description: 
-  icon: {fileID: 21300000, guid: 431297ebc63302e469c69edc2c2928ff, type: 3}
+  icon: {fileID: 729860604, guid: 3f60df4a63c835446b38e8a4c1a19e75, type: 3}
   deliveryMode: 0
   damageType: 0
   projectilePool: {fileID: 11400000, guid: 91b045029f978bf49be88af80ad5492b, type: 2}

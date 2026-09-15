@@ -204,7 +204,7 @@ namespace ACaldeira.Progression
         {
             string id = weapon.Id;
             if (id == "Rebites de Pressao") return new[] { "Disparo automático básico", "+1 rebite por ataque", "Rebites atravessam mais inimigos", "Cadência própria maior", "Rebites maiores e mais fortes", "Rebite pesado de impacto" }[level - 1];
-            if (id == "Oleo Cru") return new[] { "Leque de óleo curto", "Mais gotículas", "Óleo desacelera", "Jato mais longo", "Maior duração e perfuração", "Leque reforçado periódico" }[level - 1];
+            if (id == "Oleo Cru") return new[] { "Cospe uma bolota a cada 3 s; cai a 5 m e deixa uma poça", "Lança duas bolotas por ativação", "Poças desaceleram os inimigos em 18%", "Bolotas caem a 6,5 m", "Poças maiores e com duração de 4,25 s", "A cada quatro ativações, cria poças reforçadas" }[level - 1];
             if (id == "Serras Orbitais") return new[] { "Serras orbitam o exotraje", "+1 serra", "Órbita maior", "Rotação mais rápida", "Serras maiores e mais fortes", "Órbita oscilante" }[level - 1];
             return new[] { "Estaca pesada de longo alcance", "+1 estaca", "Mais perfuração", "Mais velocidade e alcance", "Mais dano e empurrão", "Linha de dano mais longa" }[level - 1];
         }

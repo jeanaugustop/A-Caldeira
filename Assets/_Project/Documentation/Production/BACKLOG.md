@@ -41,7 +41,7 @@ duplique a mesma tarefa em outros lugares.
 | Arma | Evolução proposta | Efeito pretendido |
 |---|---|---|
 | Rebites de Pressão | **Tempestade de Rebites** | Já existe no protótipo: transforma o tiro simples em disparo triplo, rápido e perfurante. |
-| Óleo Cru | **Fornalha Ambulante** | O leque de óleo deixa rastros incendiários breves no chão, punindo grupos que perseguem o jogador. |
+| Óleo Cru | **Fornalha Ambulante** | Poças de óleo deixam rastros incendiários breves no chão, punindo grupos que perseguem o jogador. |
 | Serras Orbitais | **Coroa de Moendas** | Cria uma segunda órbita em sentido contrário, ampliando a barreira ao redor do exotraje. |
 | Estacas Hidráulicas | **Perfuração Sísmica** | As estacas que atravessam inimigos liberam uma onda de impacto no fim do percurso. |
 | Prensa de Choque | **Linha de Montagem** | Três prensas atingem áreas em sequência. |

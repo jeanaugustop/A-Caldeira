@@ -15,7 +15,7 @@ MonoBehaviour:
   id: Oleo Cru
   displayName: Oleo Cru
   description: 
-  icon: {fileID: 21300000, guid: 431297ebc63302e469c69edc2c2928ff, type: 3}
+  icon: {fileID: -554196493, guid: 3f60df4a63c835446b38e8a4c1a19e75, type: 3}
   deliveryMode: 1
   damageType: 1
   projectilePool: {fileID: 11400000, guid: 8322edae62ff0cf41a5793f7243fbad2, type: 2}
