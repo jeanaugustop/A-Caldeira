@@ -20,16 +20,17 @@ namespace ACaldeira.Combat
         private float[] cooldowns;
         private int[] levels;
         private int[] oilShotCounts;
+        private int[] rivetFireCounts;
         public bool HasSpace { get { for (int i = 0; i < definitions.Length; i++) if (definitions[i] == null) return true; return false; } }
         public int EquippedCount { get { int count = 0; for (int i = 0; i < definitions.Length; i++) if (definitions[i] != null) count++; return count; } }
         private void Awake()
         {
             definitions = new WeaponSO[maxWeaponSlots]; cooldowns = new float[maxWeaponSlots];
-            levels = new int[maxWeaponSlots]; oilShotCounts = new int[maxWeaponSlots];
+            levels = new int[maxWeaponSlots]; oilShotCounts = new int[maxWeaponSlots]; rivetFireCounts = new int[maxWeaponSlots];
         }
         public void BeginRun(bool stress = false)
         {
-            for (int i = 0; i < definitions.Length; i++) { definitions[i] = null; cooldowns[i] = 0f; levels[i] = 0; oilShotCounts[i] = 0; }
+            for (int i = 0; i < definitions.Length; i++) { definitions[i] = null; cooldowns[i] = 0f; levels[i] = 0; oilShotCounts[i] = 0; rivetFireCounts[i] = 0; }
             var loadout = stress ? stressWeapons : startingWeapons;
             for (int i = 0; i < loadout.Length; i++) TryEquip(loadout[i]);
         }
@@ -108,7 +109,12 @@ namespace ACaldeira.Combat
                 if (cooldowns[i] > 0f) continue;
                 if (definitions[i].Id == "Oleo Cru" && simulation.TryAim(12f, out Vector2 oilDirection)) TryFire(i, oilDirection);
                 else if (definitions[i].DeliveryMode == WeaponDeliveryMode.Orbital) TryFire(i, Vector2.right);
-                else if (simulation.TryAim(definitions[i].Range, out Vector2 direction)) TryFire(i, direction);
+                else
+                {
+                    float aimRange = definitions[i].Id == "Estacas Hidraulicas" && levels[i] >= 4
+                        ? definitions[i].Range * 1.3f : definitions[i].Range;
+                    if (simulation.TryAim(aimRange, out Vector2 direction)) TryFire(i, direction);
+                }
             }
         }
         public bool TryFire(int slot, Vector2 direction)
@@ -143,20 +149,57 @@ namespace ACaldeira.Combat
                 if (fired) cooldowns[slot] = 3f / progression.CadenceMultiplier;
                 return fired;
             }
-            int count = w.ProjectilesPerShot + (level >= 2 ? 1 : 0);
+            bool isRivet = w.Id == "Rebites de Pressao";
+            bool isSaw = w.Id == "Serras Orbitais";
+            bool isStake = w.Id == "Estacas Hidraulicas";
+            int count = isSaw ? (level >= 6 ? 4 : Mathf.Min(3, level)) : w.ProjectilesPerShot + (level >= 2 ? 1 : 0);
+            float shotCooldown = w.Cooldown * (level >= 4 ? (isRivet ? 0.75f : 0.85f) : 1f) / progression.CadenceMultiplier;
             for (int i = 0; i < count; i++)
             {
-                float angle = w.DeliveryMode == WeaponDeliveryMode.Orbital ? i * 360f / count : (i - (count - 1) * 0.5f) * 8f;
+                float angle = w.DeliveryMode == WeaponDeliveryMode.Orbital ? i * 360f / count : (isRivet || isStake ? 0f : (i - (count - 1) * 0.5f) * 8f);
                 Vector2 d = Quaternion.Euler(0, 0, angle) * direction;
-                if (!poolManager.TrySpawn(w.ProjectilePool, muzzle.position, Quaternion.identity, out ProjectileActor p)) break;
+                Vector3 origin = muzzle.position;
+                if ((isRivet || isStake) && count > 1)
+                {
+                    float spacing = isStake ? 0.48f : 0.28f;
+                    Vector2 lateral = new Vector2(-d.y, d.x) * ((i - (count - 1) * 0.5f) * spacing);
+                    origin += (Vector3)lateral;
+                }
+                if (!poolManager.TrySpawn(w.ProjectilePool, origin, Quaternion.identity, out ProjectileActor p)) break;
                 p.Configure(w, d);
                 p.Damage = progression.Stat(StatId.Damage, w.Damage * (1f + permanent.DamageLevel * 0.05f) * (1f + 0.16f * (level - 1)));
-                p.Speed = progression.Stat(StatId.ProjectileSpeed, w.ProjectileSpeed * (level >= 4 ? 1.2f : 1f));
-                p.Remaining = progression.Stat(StatId.Duration, w.Duration * (level >= 5 ? 1.2f : 1f));
-                p.SetPierce(w.Pierce + (level >= 3 ? 1 : 0));
+                p.Speed = progression.Stat(StatId.ProjectileSpeed, w.ProjectileSpeed * (level >= 4 ? (isStake ? 1.3f : 1.2f) : 1f));
+                p.Remaining = isSaw ? Mathf.Max(0.05f, shotCooldown) : progression.Stat(StatId.Duration, w.Duration * (level >= 5 && !isStake ? 1.2f : 1f));
+                p.SetPierce(w.Pierce + (level >= 3 ? (isStake ? 3 : 1) : 0));
+                if (isRivet && level >= 5)
+                    p.ConfigureImpact(0.55f, 0.35f, 0f, 1.35f, Color.white);
+                if (isSaw)
+                {
+                    float orbitRadius = progression.Stat(StatId.Area, level >= 4 ? 3.2f : 2.4f);
+                    float angularSpeed = level >= 5 ? 4.5f : 3f;
+                    p.ConfigureOrbital(orbitRadius, angularSpeed, level >= 6 ? 1.35f : 1f);
+                }
+                if (isStake && level >= 5)
+                {
+                    p.Damage *= 1.25f;
+                    p.ConfigureImpact(0f, 0f, 2.2f, 1.4f, Color.white, 0.18f);
+                    if (level >= 6) p.ConfigurePressureTrail(origin);
+                }
                 fired = true;
             }
-            if (fired) cooldowns[slot] = Mathf.Max(0.04f, w.Cooldown * (level >= 4 ? 0.85f : 1f) / progression.CadenceMultiplier);
+            if (fired && isRivet && level >= 6 && (++rivetFireCounts[slot] % 5 == 0))
+            {
+                if (poolManager.TrySpawn(w.ProjectilePool, muzzle.position, Quaternion.identity, out ProjectileActor piston))
+                {
+                    piston.Configure(w, direction);
+                    piston.Damage = progression.Stat(StatId.Damage, w.Damage * (1f + permanent.DamageLevel * 0.05f) * 3f);
+                    piston.Speed = progression.Stat(StatId.ProjectileSpeed, w.ProjectileSpeed * 1.1f);
+                    piston.Remaining = progression.Stat(StatId.Duration, w.Duration * 1.35f);
+                    piston.SetPierce(w.Pierce + 5);
+                    piston.ConfigureImpact(0.8f, 0.5f, 3f, 1.8f, new Color(1f, 0.78f, 0.3f));
+                }
+            }
+            if (fired) cooldowns[slot] = Mathf.Max(0.04f, shotCooldown);
             return fired;
         }
     }

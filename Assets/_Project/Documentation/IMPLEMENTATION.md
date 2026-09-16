@@ -69,14 +69,18 @@ da UI e áudio são balanceadas em OnEnable/OnDisable. Nenhum ator executa Updat
   aluguel; OnEnable de futuros componentes não deve consumir dados de Configure.
 - Prefabs são materializados como objetos inativos pelo gerador, exclusivamente
   no Editor. Não há Instantiate/Destroy/AddComponent no código runtime.
-- Grade fixa de 48x36 células com listas encadeadas em arrays; não existe limite
-  artificial de ocupação por célula. Consultas usam distância real após a filtragem.
+- Grade fixa por partida, dimensionada a partir da área da fase, com listas
+  encadeadas em arrays; não existe limite artificial de ocupação por célula.
+  Consultas usam distância real após a filtragem.
 - Colisão de projétil usa segmento do frame para reduzir atravessamento. Histórico
   limitado de 16 impactos por projétil usa índice e geração do inimigo.
 - Limite atual de perfuração: 16 impactos por projétil. Corpos inimigos não fazem
   colisão física entre si; empilhamento é permitido no protótipo.
 - Carregamento, transições de UI, serialização de save e geração Editor podem
   alocar. GC zero é uma meta do estado estável de gameplay, a medir na engine.
+- Há uma recuperação temporária de `WaveSpawner` no `GameplaySimulation` caso a
+  referência fique nula; a causa deve ser corrigida antes de considerar a
+  arquitetura de referências completamente validada.
 
 ## Performance e limites
 

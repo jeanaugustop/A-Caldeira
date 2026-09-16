@@ -7,8 +7,9 @@
   card; apenas reduz seu peso de aparição.
 - O peso de um atributo começa em 100 e cai aproximadamente para 67, 50, 40 e
   29 após 1, 2, 3 e 5 cópias escolhidas. Nunca chega a zero.
-- Toda tela de level-up tem exatamente um card de atributo geral. Ele recebe
-  uma raridade; armas e acessórios não recebem raridade nesta primeira versão.
+- Normalmente toda tela de level-up tem uma arma, um atributo geral e um
+  acessório. O atributo recebe raridade; armas e acessórios não recebem raridade
+  nesta primeira versão.
 
 ## Bônus por raridade
 
@@ -109,4 +110,6 @@ geral e um acessório.
 
 Se não houver arma ou acessório elegível — por exemplo, quando todos os itens da
 categoria já estão no nível 6 aguardando Forja — aquela posição se transforma em
-um card extra de atributo geral. A tela sempre mantém três escolhas.
+um card extra de atributo geral. A tela sempre mantém três escolhas. A regra de
+evitar o mesmo atributo em mais de um card de fallback ainda precisa ser fechada
+no código.

@@ -1,8 +1,9 @@
 # Armas e evoluções
 
-> **Disponibilidade no protótipo:** O **Óleo Cru** está temporariamente suspenso
-> das escolhas da run. Seu leque atual desequilibra o combate; a arma será
-> rebalanceada antes de voltar ao jogo.
+> **Estado atual:** Rebites, Óleo Cru, Serras Orbitais e Estacas Hidráulicas
+> aparecem nas escolhas da run. O Óleo Cru foi refeito como arma de poças e foi
+> aprovado em playtest; Prensa de Choque e Carga de Retardo possuem arte
+> e design aprovados, mas ainda não são armas jogáveis.
 
 ## Regras da progressão
 
@@ -24,11 +25,14 @@ Dispara rebites automaticamente. Começa confiável e se transforma em uma linha
 de produção de projéteis.
 
 1. **Rebites de Pressão** — dispara automaticamente um rebite.
-2. **Bocal Duplo** — dispara `+1` rebite por ataque.
+2. **Bocal Duplo** — dispara `+1` rebite por ataque, lado a lado e sem abrir o
+   leque de mira.
 3. **Têmpera Industrial** — rebites atravessam `+1` inimigo.
-4. **Carregador Rotativo** — melhora especificamente a cadência dos Rebites.
-5. **Cabeça Expandida** — rebites maiores, com mais dano e área de impacto.
-6. **Pistão de Impacto** — a cada alguns disparos, lança um rebite pesado que
+4. **Carregador Rotativo** — melhora especificamente a cadência dos Rebites em
+   25%.
+5. **Cabeça Expandida** — rebites maiores, com mais dano e uma pequena área de
+   impacto ao acertar.
+6. **Pistão de Impacto** — a cada cinco disparos, lança um rebite pesado que
    causa muito dano, atravessa vários inimigos e empurra a linha.
 
 7. **Tempestade de Rebites** — evolução da Forja; substitui os tiros isolados
@@ -58,31 +62,33 @@ controle, não limpar inimigos como uma rajada.
 
 Serras circulam o exotraje e castigam inimigos que se aproximam demais.
 
-1. **Serras Orbitais** — três serras orbitam o jogador e ferem inimigos no contato.
-2. **Cubo de Engrenagem** — adiciona uma serra à órbita.
-3. **Braço Extensor** — aumenta o raio da órbita.
-4. **Correia Reforçada** — aumenta a velocidade de rotação.
-5. **Dentes Temperados** — serras maiores causam mais dano e acertam uma área maior.
-6. **Eixo Oscilante** — a órbita alterna entre posições mais próximas e mais
-   distantes, varrendo uma faixa maior ao redor do jogador.
+1. **Serras Orbitais** — uma serra orbita o jogador e fere inimigos no contato.
+2. **Cubo de Engrenagem** — adiciona a segunda serra à órbita.
+3. **Cubo de Engrenagem Duplo** — adiciona a terceira serra à órbita.
+4. **Braço Extensor** — aumenta o raio da órbita.
+5. **Correia Reforçada** — aumenta a velocidade de rotação.
+6. **Dentes Temperados** — adiciona a quarta serra; todas ficam maiores e mais
+   fortes, fechando o anel defensivo.
 
-7. **Coroa de Moendas** — evolução da Forja; cria uma segunda órbita de serras
-   girando no sentido contrário.
+7. **Evolução da Forja** — ainda será redesenhada em conjunto antes de receber
+   nome e efeito definitivos.
 
 ## Estacas Hidráulicas — dano e abertura de caminho em linha
 
 Dispara estacas pesadas para atravessar fileiras de inimigos e abrir caminho.
 
-1. **Estacas Hidráulicas** — dispara uma estaca pesada de longo alcance.
-2. **Pistão Duplo** — dispara `+1` estaca por ativação.
+1. **Estacas Hidráulicas** — dispara uma estaca pesada, de cadência lenta, longo
+   alcance e dano alto.
+2. **Pistão Duplo** — dispara uma segunda estaca paralela por ativação.
 3. **Ponta Perfurante** — cada estaca atravessa mais inimigos.
 4. **Propulsor Hidráulico** — aumenta velocidade e alcance das estacas.
-5. **Núcleo Denso** — estacas causam mais dano e empurram inimigos atingidos.
-6. **Trilho de Cravação** — estacas maiores mantêm uma linha de dano mais longa
-   durante o percurso.
+5. **Núcleo Denso** — estacas maiores causam mais dano e empurram inimigos
+   atingidos.
+6. **Trilho de Cravação** — as estacas deixam por alguns instantes uma linha de
+   pressão no caminho, causando dano e empurrando inimigos que a atravessarem.
 
-7. **Perfuração Sísmica** — evolução da Forja; ao encerrar o percurso, as
-   estacas liberam uma onda de impacto.
+7. **Evolução da Forja** — ainda será redesenhada em conjunto antes de receber
+   nome e efeito definitivos.
 
 ## Prensa de Choque — ataque em área contra concentrações
 
@@ -119,8 +125,24 @@ Deixa minas na posição passada do jogador e pune a horda que o segue.
 
 ## Estado de implementação
 
-Rebites de Pressão, Óleo Cru, Serras Orbitais, Estacas Hidráulicas e Tempestade
-de Rebites já existem no protótipo, mas ainda não têm estas trilhas de sete
-níveis. Óleo Cru está suspenso até trocar o leque atual pela bolota que cria poça
-no chão. Prensa de Choque, Carga de Retardo e as demais evoluções estão aprovadas
-como design e aguardam implementação.
+- As quatro armas base jogáveis avançam de nível 1 a 6 e já usam os oito slots
+  compartilhados da run.
+- **Óleo Cru** implementa sua trilha própria: uma ativação a cada 3 s, poça a
+  5 m, duas quedas no nível 2, lentidão de 18% no nível 3, alcance de 6,5 m no
+  nível 4, poças maiores/duradouras no nível 5 e poça reforçada a cada quatro
+  ativações no nível 6.
+- **Rebites** implementam Bocal Duplo alinhado, perfuração adicional, 25% de
+  cadência própria, impacto em pequena área no nível 5 e Pistão de Impacto a
+  cada cinco ativações no nível 6. O Pistão causa três vezes o dano base da arma,
+  atravessa uma linha e empurra inimigos. Falta playtest de balanceamento.
+- **Serras** começam com uma unidade, recebem a segunda e a terceira nos níveis
+  2 e 3, ganham raio e rotação nos níveis 4 e 5 e fecham com quatro serras
+  maiores no nível 6. A duração acompanha a recarga para não duplicar o anel.
+- **Estacas** recebem tiro paralelo, perfuração, velocidade e alcance próprios;
+  no nível 5 ficam maiores e empurram, e no nível 6 deixam um trilho de pressão
+  danoso durante o percurso. Serras e Estacas foram aprovadas em playtest em
+  16/09/2026.
+- A asset **Tempestade de Rebites** existe por legado do protótipo, mas não há
+  Forja nem fusão integrada ao sistema atual de progressão.
+- Prensa de Choque, Carga de Retardo e todas as evoluções nível 7 aguardam
+  implementação.

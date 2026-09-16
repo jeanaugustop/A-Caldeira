@@ -122,7 +122,22 @@ namespace ACaldeira.UI
         private void Update()
         {
             Keyboard keyboard = Keyboard.current;
-            if (gameManager.State != GameState.LevelUp || keyboard == null) return;
+            if (keyboard == null) return;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (gameManager.State == GameState.Playing && keyboard.f6Key.wasPressedThisFrame)
+            {
+                if (keyboard.leftShiftKey.isPressed || keyboard.rightShiftKey.isPressed)
+                {
+                    Debug.Log("TESTE: acessório selecionado — " + progression.DebugSelectNextAccessory() + ". Pressione F6 para subir o nível.");
+                    return;
+                }
+                int level = progression.DebugAdvanceSelectedAccessory(out string accessoryName);
+                if (level > 0) Debug.Log("TESTE: " + accessoryName + " Nv." + level + " equipado.");
+                else Debug.LogWarning("TESTE: não há slot livre para equipar " + accessoryName + ".");
+                return;
+            }
+#endif
+            if (gameManager.State != GameState.LevelUp) return;
             if (keyboard.rKey.wasPressedThisFrame) { progression.TryReroll(); return; }
             if (!keyboard.spaceKey.wasPressedThisFrame && !keyboard.enterKey.wasPressedThisFrame && !keyboard.numpadEnterKey.wasPressedThisFrame) return;
 

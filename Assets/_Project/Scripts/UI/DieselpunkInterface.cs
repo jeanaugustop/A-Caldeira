@@ -89,7 +89,7 @@ namespace ACaldeira.UI
             for (int i = 0; i < 7 && slot < 8; i++)
             {
                 int level = Progression.AccessoryLevel(i);
-                if (level > 0) ShowEquipment(slot++, Art.Accessories[i], level);
+                if (level > 0) ShowEquipment(slot++, Art.Accessories[i], level, i == 0 && Progression.RingCharges <= 0);
             }
             for (; slot < EquipmentIcons.Length; slot++)
             {
@@ -102,11 +102,12 @@ namespace ACaldeira.UI
                 position.y > 15 ? "PÁTIO DAS CALDEIRAS" : "DOCAS DE SUCATA";
             SectorLabel.text = "SETOR 07  /  " + sector;
         }
-        private void ShowEquipment(int slot, Sprite icon, int level)
+        private void ShowEquipment(int slot, Sprite icon, int level, bool dimmed = false)
         {
             if (slot >= EquipmentIcons.Length) return;
             EquipmentIcons[slot].enabled = true;
             EquipmentIcons[slot].sprite = icon;
+            EquipmentIcons[slot].color = dimmed ? new Color(0.35f, 0.4f, 0.42f, 0.75f) : Color.white;
             EquipmentLabels[slot].text = "NV. " + level;
         }
     }

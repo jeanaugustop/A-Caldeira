@@ -8,12 +8,12 @@
 - Atributos gerais atuais: Pressão Extra, Servo Rápido, Eletroímã, Cadência de
   Disparo, Esquiva e Sorte. Consulte `ATRIBUTOS.md`.
 
-## Proposta de progressão automática de vida
+## Progressão automática de vida implementada
 
 A vida máxima aumenta automaticamente a cada dez níveis do jogador. Isso não
 ocupa slot e não concorre com armas, acessórios ou atributos gerais.
 
-| Nível alcançado | Vida máxima proposta |
+| Nível alcançado | Vida máxima |
 |---:|---:|
 | 1 | 100 |
 | 10 | 120 |
@@ -24,14 +24,13 @@ ocupa slot e não concorre com armas, acessórios ou atributos gerais.
 Cada marco adiciona 20 de vida máxima. Com a meta de nível 45 em uma run de 20
 minutos, o jogador pode chegar a 180 de vida máxima antes do chefe final.
 
-## Proposta de regeneração
+## Regeneração implementada
 
-- Regeneração base: 1 ponto de vida por segundo.
-- A intenção é compensar erros pequenos ao longo da run, sem transformar dano
-  pesado em algo irrelevante.
-- Para preservar tensão, avaliar no primeiro playtest se a regeneração deve
-  começar apenas após alguns segundos sem receber dano. Essa condição ainda não
-  está decidida.
+- Regeneração base: 1 ponto de vida por segundo, continuamente durante a run.
+- Ela compensa erros pequenos, mas não interrompe o dano de contato nem substitui
+  Esquiva, Anel, Fusível ou Placa.
+- O playtest ainda precisa decidir se a regeneração contínua está forte demais ou
+  se deverá começar apenas alguns segundos após o último dano.
 
 ## Proteções e recuperação
 

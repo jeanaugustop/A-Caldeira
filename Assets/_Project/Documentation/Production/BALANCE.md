@@ -54,7 +54,7 @@ primeiro o ritmo de escolhas e a dificuldade da run expandida.
 
 Todo atributo básico usa o mesmo percentual conforme a raridade do card. O
 percentual é aplicado ao efeito apropriado: dano, velocidade e raio de coleta
-aumentam; o intervalo entre disparos diminui.
+aumentam; a cadência de disparo aumenta.
 
 | Raridade | Bônus do card |
 |---|---:|
@@ -99,12 +99,12 @@ excesso de projéteis ou problema de desempenho.
 
 ## Slots de equipamento
 
-Cada run terá **oito slots compartilhados** de equipamento. Armas e acessórios
+Cada run tem **oito slots compartilhados** de equipamento. Armas e acessórios
 ocupam o mesmo tipo de slot, permitindo builds como seis armas e dois acessórios,
 quatro armas e quatro acessórios ou duas armas especializadas e seis acessórios.
 
-Atributos gerais — Pressão Extra, Servo Rápido, Eletroímã, Cadência de Disparo e
-Sorte — não ocupam slots. Ao subir de nível, as ofertas poderão misturar novos
+Atributos gerais — Pressão Extra, Servo Rápido, Eletroímã, Cadência de Disparo,
+Esquiva e Sorte — não ocupam slots. Ao subir de nível, as ofertas misturam novos
 equipamentos, melhorias de armas já equipadas, acessórios e atributos gerais. Ao
 preencher os oito slots, novos equipamentos deixam de aparecer nas ofertas.
 
@@ -119,19 +119,15 @@ slot; uma fonte adicional de +3 rerolls poderá ser criada futuramente como
 recompensa ou item específico, se os playtests indicarem necessidade.
 
 Cada reroll troca as três opções de uma vez — arma, atributo geral e acessório —
-e preserva essa estrutura. Será acionado por botão visível ou pela tecla `R` no
-PC.
+e preserva essa estrutura. É acionado pelo botão visível ou pela tecla `R` no PC.
 
 ## Modelo de níveis das armas
 
-### Regra vigente
+### Direção aprovada
 
-Cada arma tem sete níveis. Os níveis 1 a 6 avançam por cards de melhoria e o
-jogador escolhe qual arma avançar. O nível 7 é uma evolução: na Forja, duas
-armas no nível 6 são fundidas, consumindo as duas e criando uma arma evoluída.
-Isso libera um slot de equipamento. As duplas específicas de cada fusão serão
-decididas posteriormente. Esta regra substitui anotações anteriores que deixavam
-o nível máximo de cada arma em aberto.
+Cada arma foi desenhada com sete níveis. Os níveis 1 a 6 avançam por cards de
+melhoria; o nível 7 será uma evolução. A Forja, as fusões e as receitas ainda
+não foram implementadas, portanto o runtime atual limita armas ao nível 6.
 
 Cada arma terá uma sequência própria de níveis com efeitos predeterminados. Um
 card de melhoria da arma avança para seu próximo nível conhecido — por exemplo,
@@ -160,20 +156,16 @@ atributos gerais. Seus valores exatos serão calibrados em playtest.
 | Sirene de Contenção | Periodicamente empurra e desacelera inimigos próximos. |
 | Cabo de Aterramento | Ao bloquear um dano, emite um pulso que empurra inimigos próximos. |
 
-## Inventário atual de progressão
+## Inventário real de progressão
 
-| Grupo | Conteúdo | Escolhas possíveis hoje |
-|---|---|---:|
-| Atributos gerais | Pressão Extra (5), Servo Rápido (4), Eletroímã (4), Válvula Rápida (5) | 18 |
-| Desbloqueios de arma | Óleo Cru, Serras Orbitais, Estacas Hidráulicas | 3 |
-| Evolução | Tempestade de Rebites | 1 |
-| **Total de escolhas atuais** | 8 cards/itens distintos | **22** |
+| Grupo | Estado atual |
+|---|---|
+| Atributos gerais | Seis atributos repetíveis: dano, movimento, coleta, cadência, esquiva e sorte. |
+| Armas jogáveis | Rebites, Óleo Cru, Serras Orbitais e Estacas Hidráulicas; todas podem chegar ao nível 6. |
+| Acessórios | Sete acessórios disponíveis, também até o nível 6. |
+| Slots | Oito compartilhados entre armas e acessórios; atributos não ocupam slot. |
+| Evoluções | Tempestade de Rebites existe como asset legado; nenhuma evolução de Forja está jogável. |
 
-Armas em código: Rebites de Pressão (inicial), Óleo Cru, Serras Orbitais e
-Estacas Hidráulicas; Tempestade de Rebites é evolução da arma inicial. Prensa de
-Choque e Carga de Retardo estão aprovadas no backlog, mas ainda não existem no
-jogo.
-
-Para a meta de 44 escolhas, faltam 22 escolhas além do conteúdo limitado atual.
-O sistema planejado de atributos básicos repetíveis cobre essa diferença, mas
-precisará de variedade suficiente para não repetir sempre os mesmos quatro cards.
+Prensa de Choque e Carga de Retardo possuem design e ícones, mas ainda não têm
+dados, pool ou comportamento de arma. A meta de nível 45 continua sendo apenas
+uma referência para a futura run de 20 minutos; a fase jogável atual dura 5 min.

@@ -27,9 +27,15 @@ namespace ACaldeira.Progression
         private readonly float[] flat = new float[9];
         private readonly float[] additive = new float[9];
         private float cadence, evasion, luck;
-        private float ringTimer, panicTimer, coilTimer, sirenTimer;
+        private float ringTimer, panicTimer, coilTimer, sirenTimer, cableTimer;
+        private float sirenSecondPulseTimer;
+        private float fuseEmergencyTimer, fuseEscapeTimer;
+        private int activatedFuseLevel;
         private int ringCharges;
-        private bool fuseUsed;
+        private bool fuseUsed, fuseShieldReady;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        private int debugAccessoryIndex = (int)AccessoryId.Siren;
+#endif
 
         public event Action ChoicesChanged;
         public int Level { get; private set; }
@@ -38,11 +44,24 @@ namespace ACaldeira.Progression
         public int Rerolls { get; private set; }
         public float CadenceMultiplier => 1f + cadence;
         public float Evasion => evasion;
+        public int RingCharges => ringCharges;
+        public float RingBlockInvulnerability => accessoryLevels[(int)AccessoryId.Ring] >= 3 ? 1.25f : 0.25f;
+        public bool RingPushes => accessoryLevels[(int)AccessoryId.Ring] >= 4;
         public int AccessoryCount { get { int n = 0; for (int i = 0; i < accessoryLevels.Length; i++) if (accessoryLevels[i] > 0) n++; return n; } }
         public int EquipmentCount => weapons.EquippedCount + AccessoryCount;
         public bool HasEquipmentSpace => EquipmentCount < maxEquipmentSlots;
         public float MaxHealthBonus => Mathf.Floor(Level / 10f) * 20f;
-        public float MovementMultiplier => panicTimer > 0f ? 1.7f + 0.08f * Mathf.Max(0, accessoryLevels[(int)AccessoryId.PanicValve] - 1) : 1f;
+        public float MovementMultiplier
+        {
+            get
+            {
+                float multiplier = panicTimer > 0f ? 1.7f + 0.08f * Mathf.Max(0, accessoryLevels[(int)AccessoryId.PanicValve] - 1) : 1f;
+                if (fuseEmergencyTimer > 0f && activatedFuseLevel >= 2) multiplier = Mathf.Max(multiplier, 1.6f);
+                if (fuseEscapeTimer > 0f) multiplier = Mathf.Max(multiplier, 1.35f);
+                return multiplier;
+            }
+        }
+        public bool FuseShieldReady => fuseShieldReady;
         public int Required => Mathf.CeilToInt(18f + Level * 8f + Level * Level * 1.5f);
 
         public void Begin()
@@ -50,7 +69,11 @@ namespace ACaldeira.Progression
             Array.Clear(attributeStacks, 0, attributeStacks.Length); Array.Clear(accessoryLevels, 0, accessoryLevels.Length);
             Array.Clear(flat, 0, flat.Length); Array.Clear(additive, 0, additive.Length); Array.Clear(offers, 0, offers.Length);
             cadence = evasion = luck = 0f; Level = 1; Experience = 0; Collected = 0; Rerolls = 3;
-            ringTimer = 40f; panicTimer = 0f; coilTimer = 40f; sirenTimer = 12f; ringCharges = 0; fuseUsed = false;
+            ringTimer = 40f; panicTimer = 0f; coilTimer = 40f; sirenTimer = 14f; sirenSecondPulseTimer = -1f; cableTimer = 0f;
+            fuseEmergencyTimer = fuseEscapeTimer = 0f; activatedFuseLevel = 0; ringCharges = 0; fuseUsed = false; fuseShieldReady = false;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            debugAccessoryIndex = (int)AccessoryId.Siren;
+#endif
             experienceChanged.Raise(0, Required);
         }
         public float Stat(StatId stat, float baseline)
@@ -86,6 +109,7 @@ namespace ACaldeira.Progression
             int selected = -1, candidates = 0;
             for (int i = 0; i < accessoryLevels.Length; i++)
             {
+                if (i == (int)AccessoryId.Fuse && fuseUsed) continue;
                 bool eligible = accessoryLevels[i] > 0 ? accessoryLevels[i] < 6 : HasEquipmentSpace;
                 if (eligible && UnityEngine.Random.Range(0, ++candidates) == 0) selected = i;
             }
@@ -134,13 +158,28 @@ namespace ACaldeira.Progression
         public void TickEquipment(float dt, GameplaySimulation simulation)
         {
             panicTimer = Mathf.Max(0f, panicTimer - dt);
+            cableTimer = Mathf.Max(0f, cableTimer - dt);
+            if (fuseEmergencyTimer > 0f)
+            {
+                fuseEmergencyTimer -= dt;
+                if (fuseEmergencyTimer <= 0f)
+                {
+                    if (activatedFuseLevel >= 5) fuseShieldReady = true;
+                    if (activatedFuseLevel >= 6) fuseEscapeTimer = 4f;
+                }
+            }
+            fuseEscapeTimer = Mathf.Max(0f, fuseEscapeTimer - dt);
             int ring = accessoryLevels[(int)AccessoryId.Ring];
             if (ring > 0)
             {
-                float recharge = Mathf.Max(12f, 40f - 5f * (ring - 1));
-                ringTimer -= dt;
+                float recharge = ring >= 2 ? 32f : 40f;
                 int capacity = ring >= 6 ? 2 : 1;
-                while (ringTimer <= 0f && ringCharges < capacity) { ringCharges++; ringTimer += recharge; }
+                if (ringCharges < capacity)
+                {
+                    ringTimer -= dt;
+                    if (ringTimer <= 0f) { ringCharges++; ringTimer = recharge; }
+                }
+                else ringTimer = recharge;
             }
             int coil = accessoryLevels[(int)AccessoryId.Coil];
             if (coil > 0)
@@ -151,31 +190,70 @@ namespace ACaldeira.Progression
             int siren = accessoryLevels[(int)AccessoryId.Siren];
             if (siren > 0)
             {
+                if (sirenSecondPulseTimer >= 0f)
+                {
+                    sirenSecondPulseTimer -= dt;
+                    if (sirenSecondPulseTimer <= 0f)
+                    {
+                        EmitSirenPulse(simulation, siren);
+                        sirenSecondPulseTimer = -1f;
+                    }
+                }
                 sirenTimer -= dt;
-                if (sirenTimer <= 0f) { simulation.PushEnemies(3f + siren, 2f + siren); sirenTimer += Mathf.Max(5f, 14f - siren); }
+                if (sirenTimer <= 0f)
+                {
+                    EmitSirenPulse(simulation, siren);
+                    float interval = siren >= 2 ? 11f : 14f;
+                    if (siren >= 6) sirenSecondPulseTimer = interval * 0.5f;
+                    sirenTimer += interval;
+                }
             }
+        }
+        private static void EmitSirenPulse(GameplaySimulation simulation, int level)
+        {
+            float radius = level >= 3 ? 6f : 4f;
+            float duration = level >= 4 ? 3f : 1.5f;
+            float damageReduction = level >= 5 ? 0.2f : 0f;
+            simulation.PulseSiren(radius, 3f, 0.2f, duration, damageReduction);
         }
         public bool TryBlockDamage(out bool triggerCable)
         {
             triggerCable = false;
             if (ringCharges <= 0) return false;
-            ringCharges--; triggerCable = accessoryLevels[(int)AccessoryId.Cable] > 0; return true;
+            ringCharges--; triggerCable = TryTriggerCable(4); return true;
         }
         public float DamageMultiplier(float health, float maximum)
         {
             int plate = accessoryLevels[(int)AccessoryId.Plate];
             float reduction = plate * 0.04f;
             if (plate >= 5 && health <= maximum * 0.35f) reduction += 0.12f;
-            if (accessoryLevels[(int)AccessoryId.Ring] >= 5 && ringCharges > 0) reduction += 0.05f;
+            if (accessoryLevels[(int)AccessoryId.Ring] >= 5 && ringCharges <= 0) reduction += 0.10f;
             return Mathf.Clamp(1f - reduction, 0.2f, 1f);
         }
-        public void OnDamaged() { if (accessoryLevels[(int)AccessoryId.PanicValve] > 0) panicTimer = 3f + 0.5f * (accessoryLevels[(int)AccessoryId.PanicValve] - 1); }
-        public bool TryConsumeFuse(out float healthFraction)
+        public bool OnDamaged()
+        {
+            if (accessoryLevels[(int)AccessoryId.PanicValve] > 0) panicTimer = 3f + 0.5f * (accessoryLevels[(int)AccessoryId.PanicValve] - 1);
+            return TryTriggerCable(1);
+        }
+        public bool TryConsumeFuse(out float healthFraction, out int fuseLevel)
         {
             healthFraction = 0.01f;
-            int fuse = accessoryLevels[(int)AccessoryId.Fuse];
-            if (fuse <= 0 || fuseUsed) return false;
-            fuseUsed = true; healthFraction = fuse >= 4 ? 0.25f : 0.01f; return true;
+            fuseLevel = accessoryLevels[(int)AccessoryId.Fuse];
+            if (fuseLevel <= 0 || fuseUsed) return false;
+            fuseUsed = true;
+            activatedFuseLevel = fuseLevel;
+            fuseEmergencyTimer = 5f;
+            fuseEscapeTimer = 0f;
+            fuseShieldReady = false;
+            accessoryLevels[(int)AccessoryId.Fuse] = 0;
+            healthFraction = fuseLevel >= 4 ? 0.25f : 0.01f;
+            return true;
+        }
+        public bool TryConsumeFuseShield()
+        {
+            if (!fuseShieldReady) return false;
+            fuseShieldReady = false;
+            return true;
         }
         private void ApplyAttribute(AttributeId id, float value)
         {
@@ -187,9 +265,46 @@ namespace ACaldeira.Progression
             else if (id == AttributeId.Evasion) evasion = Mathf.Min(0.65f, evasion + value);
             else luck += value <= 0.07f ? 0.015f : value <= 0.10f ? 0.03f : value <= 0.13f ? 0.045f : 0.06f;
         }
-        private void ApplyAccessory(AccessoryId id, bool isNew) => accessoryLevels[(int)id] = isNew ? 1 : Mathf.Min(6, accessoryLevels[(int)id] + 1);
-        public bool TryDodge() => UnityEngine.Random.value < evasion;
+        private void ApplyAccessory(AccessoryId id, bool isNew)
+        {
+            accessoryLevels[(int)id] = isNew ? 1 : Mathf.Min(6, accessoryLevels[(int)id] + 1);
+            if (id == AccessoryId.Ring && accessoryLevels[(int)id] >= 2) ringTimer = Mathf.Min(ringTimer, 32f);
+        }
+        public bool TryDodge(out bool triggerCable)
+        {
+            bool dodged = UnityEngine.Random.value < evasion;
+            triggerCable = dodged && TryTriggerCable(4);
+            return dodged;
+        }
+        private bool TryTriggerCable(int requiredLevel)
+        {
+            if (accessoryLevels[(int)AccessoryId.Cable] < requiredLevel || cableTimer > 0f) return false;
+            cableTimer = 8f;
+            return true;
+        }
         public int AccessoryLevel(int id) => id < 0 || id >= accessoryLevels.Length ? 0 : accessoryLevels[id];
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        public string DebugSelectNextAccessory()
+        {
+            debugAccessoryIndex = (debugAccessoryIndex + 1) % AccessoryNames.Length;
+            return AccessoryNames[debugAccessoryIndex];
+        }
+        public int DebugAdvanceSelectedAccessory(out string accessoryName)
+        {
+            accessoryName = AccessoryNames[debugAccessoryIndex];
+            if (accessoryLevels[debugAccessoryIndex] <= 0 && !HasEquipmentSpace) return -1;
+            accessoryLevels[debugAccessoryIndex] = Mathf.Min(6, accessoryLevels[debugAccessoryIndex] + 1);
+            if (debugAccessoryIndex == (int)AccessoryId.Fuse) fuseUsed = false;
+            if (debugAccessoryIndex == (int)AccessoryId.Ring)
+            {
+                ringCharges = accessoryLevels[debugAccessoryIndex] >= 6 ? 2 : 1;
+                ringTimer = accessoryLevels[debugAccessoryIndex] >= 2 ? 32f : 40f;
+            }
+            if (debugAccessoryIndex == (int)AccessoryId.Siren) sirenTimer = Mathf.Min(sirenTimer, 0.25f);
+            if (debugAccessoryIndex == (int)AccessoryId.Cable) cableTimer = 0f;
+            return accessoryLevels[debugAccessoryIndex];
+        }
+#endif
         private static string AttributeDescription(AttributeId id, float value)
         {
             string p = (value * 100f).ToString("0") + "%";
@@ -203,21 +318,21 @@ namespace ACaldeira.Progression
         private static string WeaponLevelDescription(WeaponSO weapon, int level)
         {
             string id = weapon.Id;
-            if (id == "Rebites de Pressao") return new[] { "Disparo automático básico", "+1 rebite por ataque", "Rebites atravessam mais inimigos", "Cadência própria maior", "Rebites maiores e mais fortes", "Rebite pesado de impacto" }[level - 1];
+            if (id == "Rebites de Pressao") return new[] { "Disparo automático básico", "+1 rebite alinhado por ataque", "Rebites atravessam mais inimigos", "Cadência própria +25%", "Rebites maiores com impacto em área", "A cada 5 disparos, lança um Pistão de Impacto" }[level - 1];
             if (id == "Oleo Cru") return new[] { "Cospe uma bolota a cada 3 s; cai a 5 m e deixa uma poça", "Lança duas bolotas por ativação", "Poças desaceleram os inimigos em 18%", "Bolotas caem a 6,5 m", "Poças maiores e com duração de 4,25 s", "A cada quatro ativações, cria poças reforçadas" }[level - 1];
-            if (id == "Serras Orbitais") return new[] { "Serras orbitam o exotraje", "+1 serra", "Órbita maior", "Rotação mais rápida", "Serras maiores e mais fortes", "Órbita oscilante" }[level - 1];
-            return new[] { "Estaca pesada de longo alcance", "+1 estaca", "Mais perfuração", "Mais velocidade e alcance", "Mais dano e empurrão", "Linha de dano mais longa" }[level - 1];
+            if (id == "Serras Orbitais") return new[] { "Uma serra orbita o exotraje", "Adiciona a segunda serra", "Adiciona a terceira serra", "Órbita maior", "Rotação mais rápida", "Adiciona a quarta serra; todas ficam maiores e mais fortes" }[level - 1];
+            return new[] { "Estaca pesada de longo alcance", "Adiciona uma estaca paralela", "Atravessa mais inimigos", "Velocidade e alcance +30%", "Estacas maiores, mais fortes e com empurrão", "Deixa um trilho de pressão durante o percurso" }[level - 1];
         }
         private static string AccessoryLevelDescription(AccessoryId id, int level)
         {
             string[][] d = {
-                new[] { "Bloqueia um dano a cada 40 s", "Recarga mais rápida", "Breve invulnerabilidade após bloquear", "Bloqueio empurra inimigos próximos", "Redução leve enquanto carregado", "Guarda duas cargas" },
-                new[] { "Salva da morte uma vez", "Velocidade durante a invulnerabilidade", "Onda de empurrão na ativação", "Retorna com mais vida", "Primeiro dano após o retorno é bloqueado", "Impulso de fuga após retornar" },
+                new[] { "Bloqueia um dano a cada 40 s", "Recarga reduzida para 32 s", "1,25 s de invulnerabilidade após bloquear", "Bloqueio empurra inimigos em 4 m", "10% menos dano enquanto recarrega", "Guarda duas cargas" },
+                new[] { "Salva da morte uma vez; 5 s invulnerável", "+60% de movimento durante a invulnerabilidade", "Onda de empurrão em 6 m", "Retorna com 25% da vida máxima", "Bloqueia o primeiro dano após a invulnerabilidade", "+35% de movimento por mais 4 s" },
                 new[] { "Velocidade após receber dano", "Impulso dura mais", "Recarga menor", "Empurra inimigos ao ativar", "Atravessar desacelera inimigos", "Acelera enquanto ativo" },
                 new[] { "Redução fixa de dano", "Mais redução", "Resistência temporária após dano", "Empurra quem acerta", "Mais resistência com pouca vida", "Blindagem modular" },
                 new[] { "Puxa XP a cada 40 s", "Pulsa mais rápido", "Maior alcance", "Coleta aumenta o ímã", "Pulso duplo", "Impulso após coletar" },
-                new[] { "Empurra e desacelera inimigos", "Pulsa mais rápido", "Raio maior", "Desaceleração dura mais", "Inimigos causam menos dano", "Pulso duplo" },
-                new[] { "Bloqueio gera pulso", "Pulso maior", "Pulso causa dano", "Esquiva também ativa", "Descarga salta", "Campo desacelerador" } };
+                new[] { "Empurra e desacelera inimigos", "Pulsa mais rápido", "Raio maior", "Desaceleração dura mais", "Inimigos causam menos dano", "Pulso adicional na metade do intervalo" },
+                new[] { "Dano recebido gera pulso; recarga de 8 s", "Pulso maior", "Pulso causa dano", "Bloqueios e esquivas também ativam", "Descarga salta para até 3 inimigos", "Campo desacelerador por 3 s" } };
             return d[(int)id][level - 1];
         }
     }

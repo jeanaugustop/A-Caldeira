@@ -11,7 +11,7 @@ industrial do jogo.
 | Onda | Foco | Critério de saída |
 |---|---|---|
 | 0 — Base técnica | Validação, build e versionamento | Concluída: testes, Bootstrap, carga e GitHub aprovados |
-| 1 — Polimento do Pátio | Sensação de jogo e clareza dos primeiros minutos | Um jogador novo entende, sobrevive e quer repetir a partida |
+| 1 — Polimento do Pátio | Sensação de jogo, combate e clareza dos primeiros minutos | Um jogador novo entende, sobrevive e quer repetir a partida |
 | 2 — Conteúdo | Direção visual/sonora, segunda fase e variedade | Duas fases distintas com conteúdo final suficiente para demonstração |
 | 3 — Progressão e UX | Oficina, tutorial, acessibilidade e menus | Loop completo compreensível sem explicação externa |
 | 4 — Qualidade | Correções, compatibilidade e desempenho após o conteúdo | Build candidata a demo, sem falhas bloqueadoras |
@@ -27,8 +27,10 @@ industrial do jogo.
 
 ## Próximo marco
 
-Concluir a Onda 1 com três playtests externos e uma lista enxuta de ajustes
-priorizados pelo impacto na diversão e na clareza.
+Concluir a Onda 1 com os efeitos básicos das armas/acessórios claros e três
+playtests externos registrados. O Óleo Cru em poças foi validado em 15/09/2026.
+A arte dieselpunk, cards, slots e animações já fazem parte desta onda; o que
+falta agora é confirmar a diversão e o balanceamento em partida real.
 
 ## Direção de design aprovada
 
@@ -39,3 +41,9 @@ priorizados pelo impacto na diversão e na clareza.
   dependerem de missões de mira incompatíveis com o combate automático.
 - Armas, cura e variedade adicional serão incrementadas depois que esse loop
   estiver validado; o protótipo atual não precisa mudar imediatamente.
+- O jogo terá dois modos separados: **Sobrevivência**, atualmente em produção,
+  e um futuro **Modo História** baseado em missões e setores da empresa.
+- A campanha reutilizará combate, armas, inimigos, Forja e progressão já
+  validados no modo Sobrevivência; sua produção só começa depois da vertical
+  slice atual estar estável.
+- A premissa narrativa aprovada está registrada em `LORE.md`.

@@ -25,15 +25,17 @@ O Input System pode solicitar reinício do Editor após a configuração inicial
 - Esc/Start ou botão Pausa: pausar/continuar.
 - Mobile: arrastar na metade esquerda da tela; botões à direita/centro para menus.
 - Colete sucata/óleo, escolha melhorias e sobreviva por cinco minutos.
-- A evolução da pistola exige a melhoria Pressão Extra.
+- A Forja e as evoluções de nível 7 ainda não estão implementadas.
 - Derrotas/vitórias concedem créditos; abandonar pelo menu não concede recompensa.
 
 ## Conteúdo implementado
 
-- Pátio de Triagem e Linhas de Montagem, com frequências e tempos de hazards diferentes.
+- Pátio de Triagem dieselpunk 180 × 120, com obstáculos, setores, animações
+  direcionais e hazards. Linhas de Montagem permanece como cena de desenvolvimento.
 - Drones, tratores-sucatadores e máquinas pesadas.
-- Rebites, leque de óleo em combustão, serras orbitais e estacas perfurantes.
-- Atração/coleta de XP, níveis, seleção de três ofertas sem duplicatas, pré-requisitos e evolução.
+- Rebites, Óleo Cru em poças, serras orbitais e estacas perfurantes.
+- Atração/coleta de XP, níveis, três ofertas, raridades, sorte, esquiva, rerroll,
+  oito slots compartilhados e acessórios.
 - Oficina persistente: blindagem e potência, com custos progressivos e limites.
 - Menu, HUD, pausa, derrota/vitória, reinício e retorno ao menu.
 - Áudio e vídeo persistentes; confirmação de vídeo com reversão após 12 segundos.

@@ -12,12 +12,16 @@
 O jogador tem uma breve invulnerabilidade após receber dano. Esta base será
 mantida como referência para o primeiro balanceamento da run expandida.
 
-## Observação de playtest
+## Estado atual do playtest
 
-O **Óleo Cru** está temporariamente fora das escolhas da run. O leque de projéteis
-do protótipo está limpando a arena rápido demais e mascara o balanceamento das
-demais armas. A curva dos inimigos permanece em seus valores-base até que a arma
-seja rebalanceada e testada novamente.
+O **Óleo Cru** voltou às escolhas em uma forma nova: cospe bolotas que caem a uma
+distância fixa e deixam poças de dano baixo. A base é uma ativação a cada 3 s;
+o comportamento está implementado, mas seus números ainda aguardam playtest.
+
+A fase atual é o Pátio de Triagem de **5 minutos**, com área de 180 × 120. Os
+três inimigos ainda usam os valores-base desta tabela e entram por ondas simples
+ao longo da partida. Não há escalonamento automático por vida/dano, elite, onda
+especial ou chefe no runtime atual.
 
 ## Curva inicial para uma run de 20 minutos
 
@@ -38,4 +42,4 @@ seja rebalanceada e testada novamente.
 - Esquiva, Anel de Contingência, Placa de Amortecimento e movimentação precisam
   continuar tendo valor até o final da run.
 - Os números de dano, recarga, área e duração das armas serão calibrados contra
-  esta curva apenas depois que os sistemas de progressão forem implementados.
+  esta curva em playtests, começando pelo novo Óleo Cru.

@@ -17,6 +17,8 @@ namespace ACaldeira.Enemies
         private float _health;
         private float _slowTimer;
         private float _slowMultiplier = 1f;
+        private float _weakenTimer;
+        private float _damageMultiplier = 1f;
         private ACaldeira.UI.DirectionalActor _visual;
         private void Awake() { _visual=GetComponent<ACaldeira.UI.DirectionalActor>(); }
         public void TickVisual(Vector2 movement,float dt) { if(_visual!=null)_visual.TickVisual(movement,dt); }
@@ -27,6 +29,7 @@ namespace ACaldeira.Enemies
         public EnemySO Definition => _definition;
         public float Health => _health;
         public float EffectiveMoveSpeed => _definition == null ? 0f : _definition.MoveSpeed * _slowMultiplier;
+        public float ContactDamageMultiplier => _damageMultiplier;
 
         public void Configure(EnemySO definition, int ownerWaveIndex, IEnemyLifecycleListener lifecycleListener)
         {
@@ -36,6 +39,8 @@ namespace ACaldeira.Enemies
             _health = definition != null ? definition.MaxHealth : 0f;
             _slowTimer = 0f;
             _slowMultiplier = 1f;
+            _weakenTimer = 0f;
+            _damageMultiplier = 1f;
             Position = transform.position;
             AttackTimer = 0f;
             Generation++;
@@ -54,11 +59,25 @@ namespace ACaldeira.Enemies
             _slowTimer = Mathf.Max(_slowTimer, duration);
         }
 
+        public void ApplyDamageReduction(float fraction, float duration)
+        {
+            if (fraction <= 0f || duration <= 0f) return;
+            _damageMultiplier = Mathf.Min(_damageMultiplier, Mathf.Clamp01(1f - fraction));
+            _weakenTimer = Mathf.Max(_weakenTimer, duration);
+        }
+
         public void TickStatus(float deltaTime)
         {
-            if (_slowTimer <= 0f) return;
-            _slowTimer -= deltaTime;
-            if (_slowTimer <= 0f) _slowMultiplier = 1f;
+            if (_slowTimer > 0f)
+            {
+                _slowTimer -= deltaTime;
+                if (_slowTimer <= 0f) _slowMultiplier = 1f;
+            }
+            if (_weakenTimer > 0f)
+            {
+                _weakenTimer -= deltaTime;
+                if (_weakenTimer <= 0f) _damageMultiplier = 1f;
+            }
         }
 
         public override void OnDespawned()
@@ -70,6 +89,8 @@ namespace ACaldeira.Enemies
             _health = 0f;
             _slowTimer = 0f;
             _slowMultiplier = 1f;
+            _weakenTimer = 0f;
+            _damageMultiplier = 1f;
         }
     }
 }
