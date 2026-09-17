@@ -55,7 +55,7 @@ namespace ACaldeira.UI
             if (!PlayerPrefs.HasKey(PlayerPrefsKey))
             {
                 Resolution current = Screen.currentResolution;
-                _current.SetVideo(current.width, current.height, current.refreshRate, WindowMode.Borderless);
+                _current.SetVideo(current.width, current.height, RoundedRefreshRate(current), WindowMode.Borderless);
                 return;
             }
 
@@ -112,11 +112,15 @@ namespace ACaldeira.UI
         {
 #if UNITY_STANDALONE || UNITY_EDITOR
             FullScreenMode mode = ToFullScreenMode(_current.WindowMode);
+            RefreshRate refreshRate = FindClosestRefreshRate(
+                _current.ResolutionWidth,
+                _current.ResolutionHeight,
+                _current.RefreshRate);
             Screen.SetResolution(
                 _current.ResolutionWidth,
                 _current.ResolutionHeight,
                 mode,
-                _current.RefreshRate);
+                refreshRate);
 #else
             Screen.fullScreen = true;
 #endif
@@ -125,6 +129,28 @@ namespace ACaldeira.UI
         private static float ToDecibels(float linearValue)
         {
             return linearValue <= 0.0001f ? MutedDecibels : Mathf.Log10(linearValue) * 20f;
+        }
+
+        private static int RoundedRefreshRate(Resolution resolution)
+        {
+            return Mathf.RoundToInt((float)resolution.refreshRateRatio.value);
+        }
+
+        private static RefreshRate FindClosestRefreshRate(int width, int height, int preferredRate)
+        {
+            RefreshRate selected = Screen.currentResolution.refreshRateRatio;
+            float bestDifference = float.MaxValue;
+            Resolution[] available = Screen.resolutions;
+            for (int i = 0; i < available.Length; i++)
+            {
+                Resolution candidate = available[i];
+                if (candidate.width != width || candidate.height != height) continue;
+                float difference = Mathf.Abs((float)candidate.refreshRateRatio.value - preferredRate);
+                if (difference >= bestDifference) continue;
+                bestDifference = difference;
+                selected = candidate.refreshRateRatio;
+            }
+            return selected;
         }
 
         private static FullScreenMode ToFullScreenMode(WindowMode mode)

@@ -18,13 +18,19 @@ nos documentos específicos de armas, acessórios e atributos.
 
 ## Prioridade 0 — confiabilidade e validação
 
-- [ ] Descobrir por que a referência serializada de `WaveSpawner` pode ficar nula
-  durante uma partida e remover a busca de recuperação dentro do `Update`.
+- [x] Validar a correção da referência de `WaveSpawner` em uma partida completa.
   - Aceite: nenhuma busca de cena por quadro; troca de cena, reinício e Play Mode
     não produzem `NullReferenceException`.
-- [ ] Rodar e registrar os testes EditMode e PlayMode no Unity 2022.3.62f3.
-  - O repositório contém testes de pools/grade, ciclo de partida, arte direcional
-    e Óleo Cru; o resultado mais recente deve ser registrado, não presumido.
+  - [x] `GameManager` valida os componentes e injeta a referência uma única vez
+    no `Awake`; a busca dentro do `Update` foi removida.
+  - [x] A cena Bootstrap atual foi conferida e aponta para o mesmo `WaveSpawner`
+    nos dois componentes; a compilação automática passou.
+  - [x] Entrada na fase, retorno ao menu e reinício confirmados manualmente em
+    17/09/2026, sem `NullReferenceException`.
+- [x] Rodar e registrar os testes EditMode e PlayMode no Unity 2022.3.62f3.
+  - EditMode e PlayMode executados manualmente no Test Runner em 17/09/2026;
+    todos os testes ficaram verdes, incluindo a proteção contra atributos
+    duplicados. A contagem exibida não foi registrada.
 - [ ] Gerar uma Development Build Windows e fazer uma partida manual completa.
   - Aceite: menu, Pátio, pausa, rerroll, fim de partida e reinício funcionam na
     build, sem depender do Editor.
@@ -39,21 +45,29 @@ nos documentos específicos de armas, acessórios e atributos.
   - [x] **Estacas:** tiro paralelo, perfuração, alcance, empurrão e trilho de
     pressão reais. Aprovadas em playtest em 16/09/2026.
   - **Óleo:** fechar o balanceamento após o playtest atual.
-- [ ] Completar os efeitos de níveis 1–6 dos acessórios.
-  - A seleção, slots, recargas e efeitos básicos existem, mas vários efeitos de
-    card ainda não estão em runtime: descarga do Cabo em esquiva, pulso danoso,
-    melhorias reativas da Placa e efeitos avançados do Fusível, Bobina e Válvula
-    de Pânico.
-  - [x] **Sirene de Contenção:** níveis 1–6 implementados; aguarda playtest.
+- [x] Completar os efeitos de níveis 1–6 dos acessórios.
+  - Os efeitos de runtime e os playtests individuais estão completos; o
+    balanceamento conjunto continuará durante os testes de runs completas.
+  - [x] **Sirene de Contenção:** níveis 1–6 implementados e aprovados em
+    playtest em 17/09/2026.
   - [x] **Cabo de Aterramento:** níveis 1–6 implementados e aprovados em
     playtest em 16/09/2026.
   - [x] **Anel de Contingência:** níveis 1–6 implementados e aprovados em
     playtest em 16/09/2026.
-  - [x] **Fusível Sacrificial:** níveis 1–6 implementados; aguarda playtest.
-- [ ] Corrigir a regra de ofertas extras de atributo quando arma e acessório não
+  - [x] **Fusível Sacrificial:** níveis 1–6 implementados e aprovados em
+    playtest em 17/09/2026.
+  - [x] **Válvula de Pânico:** níveis 1–6 implementados e aprovados em
+    playtest em 17/09/2026.
+  - [x] **Placa de Amortecimento:** níveis 1–6 implementados e aprovados em
+    playtest em 17/09/2026.
+  - [x] **Bobina de Recolhimento:** níveis 1–6 implementados e aprovados em
+    playtest em 17/09/2026.
+- [x] Corrigir a regra de ofertas extras de atributo quando arma e acessório não
   têm candidato elegível.
   - Aceite: continuam três cards, mas um atributo não aparece duplicado na mesma
     tela por causa do fallback.
+  - Implementado em 17/09/2026 com exclusão cumulativa dos atributos já
+    sorteados e teste EditMode cobrindo 100 telas consecutivas.
 
 ## Prioridade 2 — variedade de conteúdo
 

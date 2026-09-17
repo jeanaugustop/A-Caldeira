@@ -55,6 +55,20 @@ namespace ACaldeira.Simulation
         private float fuseStateVisualTimer;
         private Vector2 fuseActivationCenter;
         private float fuseActivationRadius;
+        private LineRenderer panicActivationVisual;
+        private LineRenderer panicStateVisual;
+        private float panicActivationVisualTimer;
+        private Vector2 panicActivationCenter;
+        private LineRenderer plateImpactVisual;
+        private LineRenderer plateStateVisual;
+        private float plateImpactVisualTimer;
+        private Vector2 plateImpactCenter;
+        private float plateImpactRadius;
+        private LineRenderer coilPulseVisual;
+        private LineRenderer coilStateVisual;
+        private float coilPulseVisualTimer;
+        private Vector2 coilPulseCenter;
+        private float coilPulseRadius;
         public event Action<float, float, float, int> HudChanged;
         public event Action EnemyKilled;
         public float Health { get; private set; }
@@ -65,6 +79,15 @@ namespace ACaldeira.Simulation
         public bool StressMode { get; private set; }
         public float MaxHealth => progression.Stat(StatId.MaxHealth, 100f + permanent.ArmorLevel * 10f + progression.MaxHealthBonus);
         private void Awake() { EnsureGrid(); }
+        public void Bind(WaveSpawner waveSpawner)
+        {
+            if (waveSpawner == null)
+            {
+                Debug.LogError("A Caldeira: tentativa de iniciar GameplaySimulation sem WaveSpawner.");
+                return;
+            }
+            waves = waveSpawner;
+        }
         private void EnsureGrid()
         {
             if (grid != null) return;
@@ -97,6 +120,15 @@ namespace ACaldeira.Simulation
             fuseActivationVisualTimer = fuseStateVisualTimer = 0f;
             if (fuseActivationVisual != null) fuseActivationVisual.enabled = false;
             if (fuseStateVisual != null) fuseStateVisual.enabled = false;
+            panicActivationVisualTimer = 0f;
+            if (panicActivationVisual != null) panicActivationVisual.enabled = false;
+            if (panicStateVisual != null) panicStateVisual.enabled = false;
+            plateImpactVisualTimer = 0f;
+            if (plateImpactVisual != null) plateImpactVisual.enabled = false;
+            if (plateStateVisual != null) plateStateVisual.enabled = false;
+            coilPulseVisualTimer = 0f;
+            if (coilPulseVisual != null) coilPulseVisual.enabled = false;
+            if (coilStateVisual != null) coilStateVisual.enabled = false;
             waves.Begin(stage);
             if (StressMode)
             {
@@ -125,13 +157,9 @@ namespace ACaldeira.Simulation
             worldCamera.transform.position = new Vector3(p.x, p.y, -10f);
             TickRingVisuals(dt, p);
             TickFuseVisuals(dt, p);
-            if (waves == null) waves = FindFirstObjectByType<WaveSpawner>();
-            if (waves == null)
-            {
-                Debug.LogError("A Caldeira: WaveSpawner não foi encontrado.");
-                gameManager.EndRun();
-                return;
-            }
+            TickPanicVisuals(dt, p);
+            TickPlateVisuals(dt, p);
+            TickCoilVisuals(dt, p);
             EnsureGrid();
             waves.Tick(dt); grid.Clear(); Alive = 0;largestEnemyRadius=.45f;
             for (int i = 0; i < enemies.Length; i++)
@@ -168,6 +196,7 @@ namespace ACaldeira.Simulation
                 grid.Insert(i, e.Position.x, e.Position.y); Alive++;
             }
             TickCableField(dt);
+            TickPanicEffect(p);
             TickCableVisuals(dt);
             if (gameManager.State != GameState.Playing) return;
             weapons.Tick(dt, this);
@@ -252,10 +281,26 @@ namespace ACaldeira.Simulation
                 return;
             }
             Health = Mathf.Max(0f, Health - dealt);
-            bool damageCable = progression.OnDamaged();
+            bool damageCable = false;
+            bool panicActivated = false;
+            bool plateReacted = false;
+            if (Health > 0f) damageCable = progression.OnDamaged(out panicActivated, out plateReacted);
             invulnerability = 0.4f;
             if (Health <= 0f) gameManager.EndRun();
-            else if (damageCable) TriggerCable();
+            else
+            {
+                if (panicActivated)
+                {
+                    if (progression.PanicLevel >= 4) PushEnemies(3.5f, 3f);
+                    ShowPanicActivation(player.position);
+                }
+                if (plateReacted)
+                {
+                    if (progression.PlateLevel >= 4) PushEnemies(2.5f, 2f);
+                    ShowPlateImpact(player.position, progression.PlateLevel >= 4 ? 2.5f : 1.3f);
+                }
+                if (damageCable) TriggerCable();
+            }
         }
         public void AttractExperience(float radius)
         {
@@ -266,6 +311,7 @@ namespace ACaldeira.Simulation
                 if (!c.IsSpawned || ((Vector2)c.Position - p).sqrMagnitude > sqr) continue;
                 c.Position = Vector2.MoveTowards(c.Position, p, radius); c.transform.position = c.Position;
             }
+            ShowCoilPulse(p, radius);
         }
         public void PushEnemies(float radius, float force)
         {
@@ -497,6 +543,134 @@ namespace ACaldeira.Simulation
                 fuseStateVisual.enabled = true;
             }
             else if (fuseStateVisualTimer <= 0f && fuseStateVisual != null) fuseStateVisual.enabled = false;
+        }
+        private void ShowPanicActivation(Vector2 center)
+        {
+            if (panicActivationVisual == null)
+                panicActivationVisual = CreateEffectLine("ValvulaPanicoAtivacao", true, 32, 0.24f,
+                    new Color(1f, 0.25f, 0.04f, 1f), 23);
+            if (panicStateVisual == null)
+                panicStateVisual = CreateEffectLine("ValvulaPanicoImpulso", true, 32, 0.1f,
+                    new Color(1f, 0.48f, 0.08f, 0.9f), 18);
+            panicActivationCenter = center;
+            panicActivationVisualTimer = 0.45f;
+            SetEffectCircle(panicActivationVisual, center, 0.5f);
+            SetEffectCircle(panicStateVisual, center, 0.9f);
+            panicActivationVisual.enabled = true;
+            panicStateVisual.enabled = true;
+        }
+        private void TickPanicVisuals(float dt, Vector2 playerPosition)
+        {
+            if (panicActivationVisualTimer > 0f)
+            {
+                panicActivationVisualTimer -= dt;
+                float progress = 1f - Mathf.Clamp01(panicActivationVisualTimer / 0.45f);
+                SetEffectCircle(panicActivationVisual, panicActivationCenter, Mathf.Lerp(0.5f, 3.5f, progress));
+                Color flash = new Color(1f, 0.25f, 0.04f, 1f - progress);
+                panicActivationVisual.startColor = panicActivationVisual.endColor = flash;
+                if (panicActivationVisualTimer <= 0f) panicActivationVisual.enabled = false;
+            }
+            if (progression.PanicActive)
+            {
+                if (panicStateVisual == null)
+                    panicStateVisual = CreateEffectLine("ValvulaPanicoImpulso", true, 32, 0.1f,
+                        new Color(1f, 0.48f, 0.08f, 0.9f), 18);
+                float pulse = 0.65f + Mathf.Sin(Time.unscaledTime * 12f) * 0.2f;
+                SetEffectCircle(panicStateVisual, playerPosition, 0.9f + Mathf.Sin(Time.unscaledTime * 8f) * 0.08f);
+                panicStateVisual.startColor = panicStateVisual.endColor = new Color(1f, 0.48f, 0.08f, pulse);
+                panicStateVisual.enabled = true;
+            }
+            else if (panicStateVisual != null) panicStateVisual.enabled = false;
+        }
+        private void TickPanicEffect(Vector2 playerPosition)
+        {
+            if (!progression.PanicActive || progression.PanicLevel < 5) return;
+            const float radius = 1.1f;
+            float radiusSquared = radius * radius;
+            for (int i = 0; i < enemies.Length; i++)
+            {
+                EnemyActor enemy = enemies[i];
+                if (enemy.IsSpawned && (enemy.Position - playerPosition).sqrMagnitude <= radiusSquared)
+                    enemy.ApplySlow(0.25f, 2f);
+            }
+        }
+        private void ShowPlateImpact(Vector2 center, float radius)
+        {
+            if (plateImpactVisual == null)
+                plateImpactVisual = CreateEffectLine("PlacaAmortecimentoImpacto", true, 8, 0.2f,
+                    new Color(0.85f, 0.72f, 0.42f, 1f), 22);
+            plateImpactCenter = center;
+            plateImpactRadius = radius;
+            plateImpactVisualTimer = 0.35f;
+            SetEffectCircle(plateImpactVisual, center, 0.55f);
+            plateImpactVisual.enabled = true;
+        }
+        private void TickPlateVisuals(float dt, Vector2 playerPosition)
+        {
+            if (plateImpactVisualTimer > 0f)
+            {
+                plateImpactVisualTimer -= dt;
+                float progress = 1f - Mathf.Clamp01(plateImpactVisualTimer / 0.35f);
+                SetEffectCircle(plateImpactVisual, plateImpactCenter,
+                    Mathf.Lerp(0.55f, plateImpactRadius, progress));
+                Color flash = new Color(0.85f, 0.72f, 0.42f, 1f - progress);
+                plateImpactVisual.startColor = plateImpactVisual.endColor = flash;
+                if (plateImpactVisualTimer <= 0f) plateImpactVisual.enabled = false;
+            }
+            if (progression.PlateAbsorptionActive)
+            {
+                if (plateStateVisual == null)
+                    plateStateVisual = CreateEffectLine("PlacaAmortecimentoAbsorcao", true, 8, 0.09f,
+                        new Color(0.72f, 0.78f, 0.82f, 0.8f), 17);
+                float strength = Mathf.InverseLerp(0.08f, 0.16f, progression.PlateAbsorptionBonus);
+                float pulse = 0.6f + Mathf.Sin(Time.unscaledTime * 10f) * 0.15f;
+                SetEffectCircle(plateStateVisual, playerPosition, Mathf.Lerp(0.8f, 1.05f, strength));
+                Color state = Color.Lerp(new Color(0.72f, 0.78f, 0.82f, pulse),
+                    new Color(1f, 0.7f, 0.2f, pulse), strength);
+                plateStateVisual.startColor = plateStateVisual.endColor = state;
+                plateStateVisual.enabled = true;
+            }
+            else if (plateStateVisual != null) plateStateVisual.enabled = false;
+        }
+        private void ShowCoilPulse(Vector2 center, float radius)
+        {
+            if (coilPulseVisual == null)
+                coilPulseVisual = CreateEffectLine("BobinaRecolhimentoPulso", true, 48, 0.16f,
+                    new Color(0.2f, 0.85f, 1f, 1f), 20);
+            coilPulseCenter = center;
+            coilPulseRadius = radius;
+            coilPulseVisualTimer = 0.75f;
+            SetEffectCircle(coilPulseVisual, center, radius);
+            coilPulseVisual.enabled = true;
+        }
+        private void TickCoilVisuals(float dt, Vector2 playerPosition)
+        {
+            if (coilPulseVisualTimer > 0f)
+            {
+                coilPulseVisualTimer -= dt;
+                float progress = 1f - Mathf.Clamp01(coilPulseVisualTimer / 0.75f);
+                SetEffectCircle(coilPulseVisual, coilPulseCenter,
+                    Mathf.Lerp(coilPulseRadius, 0.5f, progress));
+                float alpha = Mathf.Sin(progress * Mathf.PI);
+                Color pulse = new Color(0.2f, 0.85f, 1f, alpha);
+                coilPulseVisual.startColor = coilPulseVisual.endColor = pulse;
+                if (coilPulseVisualTimer <= 0f) coilPulseVisual.enabled = false;
+            }
+            if (progression.CoilPickupActive || progression.CoilMovementActive)
+            {
+                if (coilStateVisual == null)
+                    coilStateVisual = CreateEffectLine("BobinaRecolhimentoCampo", true, 40, 0.08f,
+                        new Color(0.25f, 0.75f, 1f, 0.75f), 16);
+                float radius = progression.Stat(StatId.PickupRadius, 3f);
+                float pulse = 0.55f + Mathf.Sin(Time.unscaledTime * 9f) * 0.18f;
+                Color color = progression.CoilMovementActive
+                    ? new Color(0.35f, 1f, 0.85f, pulse)
+                    : new Color(0.25f, 0.75f, 1f, pulse);
+                SetEffectCircle(coilStateVisual, playerPosition, radius);
+                coilStateVisual.startColor = coilStateVisual.endColor = color;
+                coilStateVisual.enabled = true;
+            }
+            else if (coilStateVisual != null) coilStateVisual.enabled = false;
         }
         private LineRenderer CreateEffectLine(string objectName, bool loop, int points, float width, Color color, int sortingOrder)
         {

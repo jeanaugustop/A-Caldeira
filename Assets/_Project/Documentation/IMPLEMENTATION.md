@@ -78,9 +78,10 @@ da UI e áudio são balanceadas em OnEnable/OnDisable. Nenhum ator executa Updat
   colisão física entre si; empilhamento é permitido no protótipo.
 - Carregamento, transições de UI, serialização de save e geração Editor podem
   alocar. GC zero é uma meta do estado estável de gameplay, a medir na engine.
-- Há uma recuperação temporária de `WaveSpawner` no `GameplaySimulation` caso a
-  referência fique nula; a causa deve ser corrigida antes de considerar a
-  arquitetura de referências completamente validada.
+- `GameManager` é a fonte única da referência de `WaveSpawner`. No `Awake`, ele
+  valida os componentes obrigatórios no mesmo objeto e injeta o spawner em
+  `GameplaySimulation`. Não existe busca de cena durante o `Update`; um Bootstrap
+  inválido falha imediatamente com uma mensagem clara no Console.
 
 ## Performance e limites
 
@@ -91,13 +92,14 @@ O relatório coleta até 7.200 frames após cinco segundos de aquecimento.
 
 Não confundir ausência de alocações no código C# isolado com ausência de
 alocações internas do Unity/TMP/Input System. O verificador .NET usa dublês de
-Unity, sem execução de componentes nativos. Ainda é necessário:
+Unity, sem execução de componentes nativos. Em 17/09/2026, a compilação e os
+testes EditMode/PlayMode foram executados no Unity 2022.3.62f3 e ficaram verdes.
+Ainda é necessário:
 
-1. Gerar o conteúdo e compilar no Unity 2022.3.
-2. Executar testes EditMode/PlayMode.
-3. Inspecionar layouts, seleção por controle, toque, mixer e mudança de vídeo.
-4. Medir GC e frame time em builds PC e nos dispositivos mobile escolhidos.
-5. Comparar cena sintética e partida real. Tratar 16,67 ms como orçamento de frame;
+1. Inspecionar layouts, seleção por controle, toque, mixer e mudança de vídeo.
+2. Gerar e validar uma Development Build Windows fora do Editor.
+3. Medir GC e frame time em builds PC e nos dispositivos mobile escolhidos.
+4. Comparar cena sintética e partida real. Tratar 16,67 ms como orçamento de frame;
    p95, picos e GPU também contam, não apenas FPS médio.
 
 O baseline é GameObjects/SpriteRenderer e arrays, sem Jobs/Burst. A grade reduz

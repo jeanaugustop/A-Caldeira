@@ -77,6 +77,49 @@
   proteção durante a recarga.
 - Resultado: aprovado sem novos ajustes.
 
+### Sessão 05 — Fusível Sacrificial
+
+- Data: 17/09/2026.
+- Build/commit: `7b99815`.
+- Objetivo: validar retorno da morte, invulnerabilidade, mobilidade, onda de
+  emergência, escudo posterior, consumo do item e liberação do slot.
+- Resultado: aprovado sem novos ajustes.
+
+### Sessão 06 — Válvula de Pânico
+
+- Data: 17/09/2026.
+- Build/commit: alterações locais ainda sem commit.
+- Objetivo: validar impulso de velocidade após dano, duração, recarga, onda de
+  empurrão, lentidão ao atravessar inimigos, aceleração progressiva e leitura
+  dos efeitos visuais.
+- Resultado: aprovado sem novos ajustes.
+
+### Sessão 07 — Placa de Amortecimento
+
+- Data: 17/09/2026.
+- Build/commit: alterações locais ainda sem commit.
+- Objetivo: validar redução fixa, camada temporária, empurrão, proteção com
+  pouca vida, acúmulo reativo e leitura do contorno metálico.
+- Resultado: aprovado sem novos ajustes.
+
+### Sessão 08 — Bobina de Recolhimento
+
+- Data: 17/09/2026.
+- Build/commit: alterações locais ainda sem commit.
+- Objetivo: validar sucção de XP, intervalo, alcance, aumento temporário da
+  coleta, pulso duplo, impulso de movimento e leitura dos campos azuis.
+- Resultado: aprovado sem novos ajustes.
+
+### Sessão 09 — Sirene de Contenção
+
+- Data: 17/09/2026.
+- Build/commit: alterações locais ainda sem commit.
+- Objetivo: validar intervalo, empurrão, lentidão, alcance, redução do dano dos
+  inimigos e o segundo pulso.
+- Ajuste solicitado: mover o segundo pulso para a metade do intervalo, fazendo
+  os pulsos se alternarem a cada 5,5 s no nível 6.
+- Resultado: aprovado após o ajuste.
+
 ### Sessão externa 01
 
 - Data:

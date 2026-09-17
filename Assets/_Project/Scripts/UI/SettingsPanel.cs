@@ -41,7 +41,7 @@ namespace ACaldeira.UI
         public void NextMode() { modeIndex = (modeIndex + 1) % 3; Labels(); }
         private void Labels()
         {
-            if (resolutions.Length > 0) { var r = resolutions[resolutionIndex]; resolution.SetText("Resolucao: {0} x {1} / {2} Hz", r.width, r.height, r.refreshRate); }
+            if (resolutions.Length > 0) { var r = resolutions[resolutionIndex]; resolution.SetText("Resolucao: {0} x {1} / {2} Hz", r.width, r.height, RoundedRefreshRate(r)); }
             else resolution.text = "Resolucao nativa";
             mode.text = modeIndex == 0 ? "Janela" : modeIndex == 1 ? "Janela sem bordas" : "Tela cheia";
         }
@@ -51,7 +51,7 @@ namespace ACaldeira.UI
             if (Application.isMobilePlatform || resolutions.Length == 0) { settings.Save(); return; }
             if (remaining > 0) return;
             var c = settings.Current; oldWidth = c.ResolutionWidth; oldHeight = c.ResolutionHeight; oldRate = c.RefreshRate; oldMode = c.WindowMode;
-            var r = resolutions[resolutionIndex]; settings.SetVideo(r.width, r.height, r.refreshRate, (WindowMode)modeIndex);
+            var r = resolutions[resolutionIndex]; settings.SetVideo(r.width, r.height, RoundedRefreshRate(r), (WindowMode)modeIndex);
             remaining = 12f; confirmation.SetActive(true);
         }
         public void ConfirmVideo() { remaining = 0; confirmation.SetActive(false); settings.Save(); }
@@ -64,6 +64,10 @@ namespace ACaldeira.UI
             if (remaining <= 0) return;
             remaining -= Time.unscaledDeltaTime; countdown.SetText("Manter alteracoes? {0:0}s", Mathf.Ceil(remaining));
             if (remaining <= 0) RevertVideo();
+        }
+        private static int RoundedRefreshRate(Resolution value)
+        {
+            return Mathf.RoundToInt((float)value.refreshRateRatio.value);
         }
     }
 }

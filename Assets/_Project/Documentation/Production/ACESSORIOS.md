@@ -50,37 +50,56 @@ Gera uma carga que bloqueia dano e cria janelas seguras para atravessar a horda.
 
 Transforma um acerto sofrido em uma oportunidade para escapar da horda.
 
-1. **Válvula de Pânico** — ao receber dano, concede grande velocidade por 3 s, com recarga.
-2. **Mola de Retorno** — aumenta a duração do impulso de velocidade.
-3. **Relé de Segurança** — reduz a recarga entre ativações.
-4. **Jato de Alívio** — ao ativar, empurra inimigos próximos.
-5. **Pressão Residual** — inimigos atravessados durante o impulso são desacelerados.
-6. **Alarme Contínuo** — enquanto o impulso está ativo, a velocidade aumenta gradualmente.
+1. **Válvula de Pânico** — ao receber dano, concede 70% de velocidade adicional
+   por 3 s, com recarga de 12 s.
+2. **Mola de Retorno** — aumenta a duração do impulso para 5 s.
+3. **Relé de Segurança** — reduz a recarga entre ativações para 8 s.
+4. **Jato de Alívio** — ao ativar, empurra inimigos em um raio de 3,5 m.
+5. **Pressão Residual** — inimigos próximos atravessados durante o impulso sofrem
+   25% de lentidão por 2 s.
+6. **Alarme Contínuo** — enquanto o impulso está ativo, a velocidade aumenta
+   gradualmente de 70% até 120% adicional.
 7. **Evolução da Forja** — a definir junto com as fusões de acessórios.
+
+Ao ativar, uma onda laranja-avermelhada se expande a partir do jogador. Durante
+todo o impulso, um anel pulsante acompanha o exotraje para deixar claro que a
+Válvula ainda está ativa.
 
 ## Placa de Amortecimento — resistência constante
 
 Reduz dano sofrido e fica mais eficiente nos momentos de maior pressão.
 
-1. **Placa de Amortecimento** — reduz uma porcentagem fixa do dano recebido.
-2. **Chapa Reforçada** — aumenta a redução de dano.
-3. **Camada Absorvente** — após receber dano, ganha redução adicional por pouco tempo.
-4. **Revestimento de Borracha** — inimigos que acertam o jogador são empurrados.
-5. **Estrutura de Contenção** — abaixo de uma porcentagem de vida, aumenta a resistência.
-6. **Blindagem Modular** — a cada dano evitado pela Placa, recupera parte de sua resistência temporária.
+1. **Placa de Amortecimento** — reduz em 6% todo dano recebido.
+2. **Chapa Reforçada** — aumenta a redução fixa para 10%.
+3. **Camada Absorvente** — após receber dano, ganha mais 8% de redução por 3 s.
+4. **Revestimento de Borracha** — ao receber dano, empurra inimigos em um raio
+   de 2,5 m.
+5. **Estrutura de Contenção** — abaixo de 35% da vida, ganha mais 12% de redução.
+6. **Blindagem Modular** — ser atingido durante a Camada Absorvente renova seus
+   3 s e aumenta o bônus temporário em 4%, até o máximo de 16%.
 7. **Evolução da Forja** — a definir junto com as fusões de acessórios.
+
+O impacto da Placa produz uma onda metálica. Enquanto a Camada Absorvente está
+ativa, um contorno octogonal acompanha o jogador e muda do cinza para o laranja
+conforme o bônus temporário se aproxima de 16%.
 
 ## Bobina de Recolhimento — coleta pontual
 
 Cria pulsos de sucção para converter rapidamente XP abandonado no mapa em níveis.
 
-1. **Bobina de Recolhimento** — a cada 40 s, puxa o XP visível em direção ao jogador.
-2. **Rotor de Sucção** — reduz o tempo entre os pulsos da Bobina.
-3. **Campo de Alcance** — o pulso alcança XP além da área visível próxima ao jogador.
-4. **Carga de Coleta** — após um pulso, o raio normal de coleta aumenta por pouco tempo.
-5. **Bobina Dupla** — cada ativação dispara dois pulsos curtos em sequência.
-6. **Núcleo de Reciclagem** — o primeiro pulso também concede um breve impulso de movimento para buscar mais XP.
+1. **Bobina de Recolhimento** — a cada 40 s, puxa o XP em um raio de 15 m
+   em direção ao jogador.
+2. **Rotor de Sucção** — reduz o intervalo entre os pulsos para 32 s.
+3. **Campo de Alcance** — aumenta o alcance do pulso para 24 m.
+4. **Carga de Coleta** — após o pulso, dobra o raio normal de coleta por 6 s.
+5. **Bobina Dupla** — emite um segundo pulso 2 s depois do primeiro.
+6. **Núcleo de Reciclagem** — o primeiro pulso também concede 35% de velocidade
+   adicional por 5 s.
 7. **Evolução da Forja** — a definir junto com as fusões de acessórios.
+
+Cada ativação mostra um círculo azul que se fecha do limite do alcance até o
+jogador. Durante os bônus temporários, o raio de coleta permanece marcado no
+chão; no nível 6, sua cor fica mais clara enquanto o impulso está ativo.
 
 ## Sirene de Contenção — controle de área
 
@@ -127,11 +146,11 @@ níveis acima continuam sendo a direção aprovada de design.
 | Acessório | Implementado hoje | Ainda pendente |
 |---|---|---|
 | Anel | níveis 1–6 completos: recarga, bloqueio, invulnerabilidade, empurrão, proteção durante recarga e duas cargas; aprovado em 16/09/2026 | evolução da Forja |
-| Fusível | níveis 1–6 completos: revive, invulnerabilidade, velocidade, empurrão, retorno com vida, escudo posterior e impulso de fuga | balanceamento em playtest |
-| Válvula | velocidade após dano, com duração maior conforme o nível | recarga, empurrão, lentidão ao atravessar e aceleração progressiva |
-| Placa | redução de dano acumulada por nível e bônus abaixo de 35% de vida | resistência temporária, empurrão e recuperação reativa |
-| Bobina | puxa XP periodicamente; recarga e alcance escalam com nível | ímã temporário, pulso duplo e impulso de movimento |
-| Sirene | níveis 1–6 completos: intervalo, empurrão, lentidão, raio, redução do dano inimigo e pulso duplo | balanceamento em playtest |
+| Fusível | níveis 1–6 completos: revive, invulnerabilidade, velocidade, empurrão, retorno com vida, escudo posterior e impulso de fuga; aprovado em 17/09/2026 | evolução da Forja |
+| Válvula | níveis 1–6 completos: impulso após dano, duração, recarga, empurrão, lentidão ao atravessar e aceleração progressiva; aprovada em 17/09/2026 | evolução da Forja |
+| Placa | níveis 1–6 completos: redução fixa, camada temporária, empurrão, proteção com pouca vida e acúmulo reativo; aprovada em 17/09/2026 | evolução da Forja |
+| Bobina | níveis 1–6 completos: pulso de XP, intervalo, alcance, ímã temporário, pulso duplo e impulso de movimento; aprovada em 17/09/2026 | evolução da Forja |
+| Sirene | níveis 1–6 completos: intervalo, empurrão, lentidão, raio, redução do dano inimigo e pulso duplo; aprovada em 17/09/2026 | evolução da Forja |
 | Cabo | níveis 1–6 completos: reação ao dano, raio, dano elétrico, ativação por bloqueio/esquiva, arcos e campo de lentidão; aprovado em 16/09/2026 | evolução da Forja |
 
 As evoluções de nível 7 continuam dependentes da Forja, que ainda não existe.
@@ -145,6 +164,18 @@ seleciona o Cabo de Aterramento.
 O Fusível é consumido ao salvar o jogador, libera seu slot e não volta às ofertas
 na mesma run. Para selecioná-lo no modo de teste, use `Shift+F6` três vezes a
 partir da seleção inicial da Sirene.
+
+Para selecionar a Válvula de Pânico no modo de teste, use `Shift+F6` quatro
+vezes a partir da seleção inicial da Sirene. Cada `F6` aumenta um nível e também
+libera imediatamente a próxima ativação para facilitar o teste.
+
+Para selecionar a Placa de Amortecimento, use `Shift+F6` cinco vezes a partir
+da Sirene. Pressione `F6` para avançar um nível e receba dano para observar a
+reação correspondente.
+
+Para selecionar a Bobina de Recolhimento, use `Shift+F6` seis vezes a partir da
+Sirene. Cada `F6` avança um nível e antecipa o próximo pulso para cerca de
+0,25 s, permitindo conferir toda a progressão sem esperar o intervalo normal.
 
 ## Sistemas relacionados
 

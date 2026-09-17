@@ -27,7 +27,9 @@ namespace ACaldeira.Progression
         private readonly float[] flat = new float[9];
         private readonly float[] additive = new float[9];
         private float cadence, evasion, luck;
-        private float ringTimer, panicTimer, coilTimer, sirenTimer, cableTimer;
+        private float ringTimer, panicTimer, panicDuration, panicCooldownTimer, coilTimer, sirenTimer, cableTimer;
+        private float coilSecondPulseTimer, coilPickupTimer, coilMoveTimer;
+        private float plateAbsorbTimer, plateAbsorbBonus;
         private float sirenSecondPulseTimer;
         private float fuseEmergencyTimer, fuseEscapeTimer;
         private int activatedFuseLevel;
@@ -55,12 +57,25 @@ namespace ACaldeira.Progression
         {
             get
             {
-                float multiplier = panicTimer > 0f ? 1.7f + 0.08f * Mathf.Max(0, accessoryLevels[(int)AccessoryId.PanicValve] - 1) : 1f;
+                float multiplier = 1f;
+                if (panicTimer > 0f)
+                {
+                    float progress = panicDuration > 0f ? 1f - Mathf.Clamp01(panicTimer / panicDuration) : 0f;
+                    multiplier = PanicLevel >= 6 ? Mathf.Lerp(1.7f, 2.2f, progress) : 1.7f;
+                }
                 if (fuseEmergencyTimer > 0f && activatedFuseLevel >= 2) multiplier = Mathf.Max(multiplier, 1.6f);
                 if (fuseEscapeTimer > 0f) multiplier = Mathf.Max(multiplier, 1.35f);
+                if (coilMoveTimer > 0f) multiplier = Mathf.Max(multiplier, 1.35f);
                 return multiplier;
             }
         }
+        public bool PanicActive => panicTimer > 0f;
+        public int PanicLevel => accessoryLevels[(int)AccessoryId.PanicValve];
+        public bool PlateAbsorptionActive => plateAbsorbTimer > 0f;
+        public float PlateAbsorptionBonus => plateAbsorbBonus;
+        public int PlateLevel => accessoryLevels[(int)AccessoryId.Plate];
+        public bool CoilPickupActive => coilPickupTimer > 0f;
+        public bool CoilMovementActive => coilMoveTimer > 0f;
         public bool FuseShieldReady => fuseShieldReady;
         public int Required => Mathf.CeilToInt(18f + Level * 8f + Level * Level * 1.5f);
 
@@ -69,7 +84,9 @@ namespace ACaldeira.Progression
             Array.Clear(attributeStacks, 0, attributeStacks.Length); Array.Clear(accessoryLevels, 0, accessoryLevels.Length);
             Array.Clear(flat, 0, flat.Length); Array.Clear(additive, 0, additive.Length); Array.Clear(offers, 0, offers.Length);
             cadence = evasion = luck = 0f; Level = 1; Experience = 0; Collected = 0; Rerolls = 3;
-            ringTimer = 40f; panicTimer = 0f; coilTimer = 40f; sirenTimer = 14f; sirenSecondPulseTimer = -1f; cableTimer = 0f;
+            ringTimer = 40f; panicTimer = panicDuration = panicCooldownTimer = 0f; coilTimer = 40f; sirenTimer = 14f; sirenSecondPulseTimer = -1f; cableTimer = 0f;
+            coilSecondPulseTimer = -1f; coilPickupTimer = coilMoveTimer = 0f;
+            plateAbsorbTimer = plateAbsorbBonus = 0f;
             fuseEmergencyTimer = fuseEscapeTimer = 0f; activatedFuseLevel = 0; ringCharges = 0; fuseUsed = false; fuseShieldReady = false;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             debugAccessoryIndex = (int)AccessoryId.Siren;
@@ -79,7 +96,9 @@ namespace ACaldeira.Progression
         public float Stat(StatId stat, float baseline)
         {
             int i = (int)stat;
-            return Mathf.Max(0.01f, (baseline + flat[i]) * (1f + additive[i]));
+            float value = Mathf.Max(0.01f, (baseline + flat[i]) * (1f + additive[i]));
+            if (stat == StatId.PickupRadius && coilPickupTimer > 0f) value *= 2f;
+            return value;
         }
         public void Gain(int xp)
         {
@@ -95,7 +114,11 @@ namespace ACaldeira.Progression
         {
             offers[0] = RollWeaponOffer(); offers[1] = RollAttributeOffer(-1); offers[2] = RollAccessoryOffer();
             if (offers[0] == null) offers[0] = RollAttributeOffer(offers[1].Id);
-            if (offers[2] == null) offers[2] = RollAttributeOffer(offers[1].Id);
+            if (offers[2] == null)
+            {
+                int secondExcluded = offers[0].Kind == RunOfferKind.Attribute ? offers[0].Id : -1;
+                offers[2] = RollAttributeOffer(offers[1].Id, secondExcluded);
+            }
         }
         private RunOffer RollWeaponOffer()
         {
@@ -118,12 +141,12 @@ namespace ACaldeira.Progression
             return new RunOffer(RunOfferKind.Accessory, AccessoryNames[selected] + "  Nv." + next,
                 (isNew ? "Adicionar acessório" : "Aprimorar acessório") + " — " + AccessoryLevelDescription((AccessoryId)selected, next), selected, isNew);
         }
-        private RunOffer RollAttributeOffer(int excluded)
+        private RunOffer RollAttributeOffer(int excluded, int secondExcluded = -1)
         {
             int selected = -1; float total = 0f;
             for (int i = 0; i < attributeStacks.Length; i++)
             {
-                if (i == excluded) continue;
+                if (i == excluded || i == secondExcluded) continue;
                 float weight = 100f / (1f + 0.5f * attributeStacks[i]); total += weight;
                 if (UnityEngine.Random.value * total < weight) selected = i;
             }
@@ -158,6 +181,11 @@ namespace ACaldeira.Progression
         public void TickEquipment(float dt, GameplaySimulation simulation)
         {
             panicTimer = Mathf.Max(0f, panicTimer - dt);
+            panicCooldownTimer = Mathf.Max(0f, panicCooldownTimer - dt);
+            plateAbsorbTimer = Mathf.Max(0f, plateAbsorbTimer - dt);
+            if (plateAbsorbTimer <= 0f) plateAbsorbBonus = 0f;
+            coilPickupTimer = Mathf.Max(0f, coilPickupTimer - dt);
+            coilMoveTimer = Mathf.Max(0f, coilMoveTimer - dt);
             cableTimer = Mathf.Max(0f, cableTimer - dt);
             if (fuseEmergencyTimer > 0f)
             {
@@ -184,8 +212,24 @@ namespace ACaldeira.Progression
             int coil = accessoryLevels[(int)AccessoryId.Coil];
             if (coil > 0)
             {
+                if (coilSecondPulseTimer >= 0f)
+                {
+                    coilSecondPulseTimer -= dt;
+                    if (coilSecondPulseTimer <= 0f)
+                    {
+                        simulation.AttractExperience(CoilRadius(coil));
+                        coilSecondPulseTimer = -1f;
+                    }
+                }
                 coilTimer -= dt;
-                if (coilTimer <= 0f) { simulation.AttractExperience(12f + coil * 3f); coilTimer += Mathf.Max(18f, 40f - coil * 4f); }
+                if (coilTimer <= 0f)
+                {
+                    simulation.AttractExperience(CoilRadius(coil));
+                    if (coil >= 4) coilPickupTimer = 6f;
+                    if (coil >= 5) coilSecondPulseTimer = 2f;
+                    if (coil >= 6) coilMoveTimer = 5f;
+                    coilTimer += coil >= 2 ? 32f : 40f;
+                }
             }
             int siren = accessoryLevels[(int)AccessoryId.Siren];
             if (siren > 0)
@@ -216,6 +260,7 @@ namespace ACaldeira.Progression
             float damageReduction = level >= 5 ? 0.2f : 0f;
             simulation.PulseSiren(radius, 3f, 0.2f, duration, damageReduction);
         }
+        private static float CoilRadius(int level) => level >= 3 ? 24f : 15f;
         public bool TryBlockDamage(out bool triggerCable)
         {
             triggerCable = false;
@@ -225,14 +270,32 @@ namespace ACaldeira.Progression
         public float DamageMultiplier(float health, float maximum)
         {
             int plate = accessoryLevels[(int)AccessoryId.Plate];
-            float reduction = plate * 0.04f;
+            float reduction = plate <= 0 ? 0f : plate >= 2 ? 0.10f : 0.06f;
+            if (plate >= 3 && plateAbsorbTimer > 0f) reduction += plateAbsorbBonus;
             if (plate >= 5 && health <= maximum * 0.35f) reduction += 0.12f;
             if (accessoryLevels[(int)AccessoryId.Ring] >= 5 && ringCharges <= 0) reduction += 0.10f;
             return Mathf.Clamp(1f - reduction, 0.2f, 1f);
         }
-        public bool OnDamaged()
+        public bool OnDamaged(out bool panicActivated, out bool plateReacted)
         {
-            if (accessoryLevels[(int)AccessoryId.PanicValve] > 0) panicTimer = 3f + 0.5f * (accessoryLevels[(int)AccessoryId.PanicValve] - 1);
+            panicActivated = false;
+            int panicLevel = accessoryLevels[(int)AccessoryId.PanicValve];
+            if (panicLevel > 0 && panicCooldownTimer <= 0f)
+            {
+                panicDuration = panicLevel >= 2 ? 5f : 3f;
+                panicTimer = panicDuration;
+                panicCooldownTimer = panicLevel >= 3 ? 8f : 12f;
+                panicActivated = true;
+            }
+            int plateLevel = accessoryLevels[(int)AccessoryId.Plate];
+            plateReacted = plateLevel > 0;
+            if (plateLevel >= 3)
+            {
+                plateAbsorbBonus = plateLevel >= 6 && plateAbsorbTimer > 0f
+                    ? Mathf.Min(0.16f, plateAbsorbBonus + 0.04f)
+                    : 0.08f;
+                plateAbsorbTimer = 3f;
+            }
             return TryTriggerCable(1);
         }
         public bool TryConsumeFuse(out float healthFraction, out int fuseLevel)
@@ -269,6 +332,7 @@ namespace ACaldeira.Progression
         {
             accessoryLevels[(int)id] = isNew ? 1 : Mathf.Min(6, accessoryLevels[(int)id] + 1);
             if (id == AccessoryId.Ring && accessoryLevels[(int)id] >= 2) ringTimer = Mathf.Min(ringTimer, 32f);
+            if (id == AccessoryId.Coil) coilTimer = Mathf.Min(coilTimer, accessoryLevels[(int)id] >= 2 ? 32f : 40f);
         }
         public bool TryDodge(out bool triggerCable)
         {
@@ -302,6 +366,14 @@ namespace ACaldeira.Progression
             }
             if (debugAccessoryIndex == (int)AccessoryId.Siren) sirenTimer = Mathf.Min(sirenTimer, 0.25f);
             if (debugAccessoryIndex == (int)AccessoryId.Cable) cableTimer = 0f;
+            if (debugAccessoryIndex == (int)AccessoryId.PanicValve) panicCooldownTimer = 0f;
+            if (debugAccessoryIndex == (int)AccessoryId.Plate) plateAbsorbTimer = plateAbsorbBonus = 0f;
+            if (debugAccessoryIndex == (int)AccessoryId.Coil)
+            {
+                coilTimer = 0.25f;
+                coilSecondPulseTimer = -1f;
+                coilPickupTimer = coilMoveTimer = 0f;
+            }
             return accessoryLevels[debugAccessoryIndex];
         }
 #endif
@@ -328,9 +400,9 @@ namespace ACaldeira.Progression
             string[][] d = {
                 new[] { "Bloqueia um dano a cada 40 s", "Recarga reduzida para 32 s", "1,25 s de invulnerabilidade após bloquear", "Bloqueio empurra inimigos em 4 m", "10% menos dano enquanto recarrega", "Guarda duas cargas" },
                 new[] { "Salva da morte uma vez; 5 s invulnerável", "+60% de movimento durante a invulnerabilidade", "Onda de empurrão em 6 m", "Retorna com 25% da vida máxima", "Bloqueia o primeiro dano após a invulnerabilidade", "+35% de movimento por mais 4 s" },
-                new[] { "Velocidade após receber dano", "Impulso dura mais", "Recarga menor", "Empurra inimigos ao ativar", "Atravessar desacelera inimigos", "Acelera enquanto ativo" },
-                new[] { "Redução fixa de dano", "Mais redução", "Resistência temporária após dano", "Empurra quem acerta", "Mais resistência com pouca vida", "Blindagem modular" },
-                new[] { "Puxa XP a cada 40 s", "Pulsa mais rápido", "Maior alcance", "Coleta aumenta o ímã", "Pulso duplo", "Impulso após coletar" },
+                new[] { "+70% de movimento por 3 s após dano; recarga de 12 s", "Impulso dura 5 s", "Recarga reduzida para 8 s", "Ao ativar, empurra inimigos em 3,5 m", "Inimigos próximos durante a fuga sofrem 25% de lentidão por 2 s", "Velocidade cresce de +70% até +120% durante o impulso" },
+                new[] { "Reduz todo dano recebido em 6%", "Redução fixa aumenta para 10%", "+8% de redução por 3 s após receber dano", "Ao receber dano, empurra inimigos em 2,5 m", "+12% de redução abaixo de 35% da vida", "Acertos durante a proteção renovam a duração e elevam o bônus até 16%" },
+                new[] { "A cada 40 s, puxa XP em um raio de 15 m", "Intervalo reduzido para 32 s", "Alcance aumentado para 24 m", "Após o pulso, dobra o raio de coleta por 6 s", "Emite um segundo pulso após 2 s", "Primeiro pulso concede +35% de movimento por 5 s" },
                 new[] { "Empurra e desacelera inimigos", "Pulsa mais rápido", "Raio maior", "Desaceleração dura mais", "Inimigos causam menos dano", "Pulso adicional na metade do intervalo" },
                 new[] { "Dano recebido gera pulso; recarga de 8 s", "Pulso maior", "Pulso causa dano", "Bloqueios e esquivas também ativam", "Descarga salta para até 3 inimigos", "Campo desacelerador por 3 s" } };
             return d[(int)id][level - 1];

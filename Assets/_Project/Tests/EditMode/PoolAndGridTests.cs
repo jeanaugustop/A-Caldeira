@@ -1,7 +1,11 @@
 using System;
+using System.Collections.Generic;
+using System.Reflection;
+using ACaldeira.Combat;
 using ACaldeira.Data;
 using ACaldeira.Enemies;
 using ACaldeira.Pooling;
+using ACaldeira.Progression;
 using ACaldeira.Simulation;
 using NUnit.Framework;
 using UnityEngine;
@@ -69,6 +73,42 @@ namespace ACaldeira.Tests
             var grid = new SpatialGrid(4, 4, 4, -4, -4, 2);
             Assert.That(grid.Column(-0.1f), Is.EqualTo(1)); Assert.That(grid.Column(0f), Is.EqualTo(2));
             Assert.That(grid.Column(-100f), Is.Zero); Assert.That(grid.Row(100f), Is.EqualTo(3));
+        }
+        [Test] public void AttributeFallbacksNeverRepeatOnSameScreen()
+        {
+            GameObject root = new GameObject("ProgressionFallbackTest");
+            UnityEngine.Random.State previousRandomState = UnityEngine.Random.state;
+            try
+            {
+                WeaponManager weapons = root.AddComponent<WeaponManager>();
+                RunProgression progression = root.AddComponent<RunProgression>();
+                const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+                typeof(WeaponManager).GetField("definitions", flags).SetValue(weapons, new WeaponSO[0]);
+                typeof(RunProgression).GetField("weapons", flags).SetValue(progression, weapons);
+                typeof(RunProgression).GetField("maxEquipmentSlots", flags).SetValue(progression, 0);
+                MethodInfo rollOffers = typeof(RunProgression).GetMethod("RollOffers", flags);
+                Assert.That(rollOffers, Is.Not.Null);
+                UnityEngine.Random.InitState(20260917);
+
+                for (int roll = 0; roll < 100; roll++)
+                {
+                    rollOffers.Invoke(progression, null);
+                    var attributeNames = new HashSet<string>();
+                    for (int slot = 0; slot < 3; slot++)
+                    {
+                        RunOffer offer = progression.Offer(slot);
+                        Assert.That(offer, Is.Not.Null);
+                        Assert.That(offer.Kind, Is.EqualTo(RunOfferKind.Attribute));
+                        attributeNames.Add(offer.Title.Split(new[] { " — " }, StringSplitOptions.None)[0]);
+                    }
+                    Assert.That(attributeNames.Count, Is.EqualTo(3), "A mesma oferta de atributo apareceu mais de uma vez.");
+                }
+            }
+            finally
+            {
+                UnityEngine.Random.state = previousRandomState;
+                Object.DestroyImmediate(root);
+            }
         }
     }
 }

@@ -11,6 +11,7 @@ using UnityEngine.SceneManagement;
 
 namespace ACaldeira.Core
 {
+    [RequireComponent(typeof(WaveSpawner), typeof(GameplaySimulation))]
     public sealed class GameManager : MonoBehaviour
     {
         [SerializeField] private PoolManager poolManager;
@@ -40,6 +41,15 @@ namespace ACaldeira.Core
             if (!runtimeServices.TryBind(this, settingsManager))
             { transform.root.gameObject.SetActive(false); return; }
             ownsServices = true;
+            if (waveSpawner == null) waveSpawner = GetComponent<WaveSpawner>();
+            if (simulation == null) simulation = GetComponent<GameplaySimulation>();
+            if (waveSpawner == null || simulation == null)
+            {
+                Debug.LogError("A Caldeira: Bootstrap inválido. GameManager exige WaveSpawner e GameplaySimulation no mesmo objeto.");
+                enabled = false;
+                return;
+            }
+            simulation.Bind(waveSpawner);
             Application.targetFrameRate = 60;
             DontDestroyOnLoad(transform.root.gameObject);
             poolManager.Initialize();
